@@ -1,0 +1,20 @@
+# Build Configuration for Audit Service
+# Configures build targets and generators for the audit service project
+
+targets:
+  $default:
+    builders:
+      # Vaden framework class scanner for dependency injection and routing
+      vaden_class_scanner|aggregating_vaden_builder:
+        enabled: true
+      # Drift ORM code generation for database models
+      drift_dev:
+        options:
+          # Store DateTime values as PostgreSQL timestamps
+          store_date_time_values_as_text: false
+          sql:
+            dialects:
+              - postgres
+          databases:
+            # Database configuration for audit logs
+            audit_database: lib/src/models/database.dart

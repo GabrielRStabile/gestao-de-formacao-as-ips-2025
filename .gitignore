@@ -55,7 +55,6 @@ composer.phar
 .phpunit.result.cache
 
 # .NET
-bin/
 obj/
 *.user
 *.suo

@@ -9,6 +9,10 @@ import '../services/audit_log_service.dart';
 /// Provides REST API endpoints for querying and testing audit logs.
 /// Supports filtering, pagination, and test log creation.
 @Controller('/audit')
+@Api(
+  tag: 'Audit',
+  description: 'Handles audit logging and retrieval of audit logs',
+)
 class AuditController {
   final AuditLogService _auditLogService;
 

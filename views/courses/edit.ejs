@@ -1,0 +1,18 @@
+<form method="POST" action="/users/edit" class="register-form">
+  <input name="name" value="<%= user.name %>" placeholder="Nome" required />
+
+  <input name="date_of_birth" type="date"
+    value="<%= user.date_of_birth ? (
+      user.date_of_birth.toISOString ? user.date_of_birth.toISOString().slice(0,10) : user.date_of_birth.slice(0,10)
+    ) : '' %>"
+    required />
+
+  <input name="nif" value="<%= user.nif %>" placeholder="NIF" required />
+  <input name="email" type="email" value="<%= user.email %>" required />
+  <input name="phone" value="<%= user.phone %>" placeholder="Telefone" />
+  <input name="address" value="<%= user.address %>" placeholder="Morada" />
+  <% if (error) { %>
+    <div class="error"><%= error %></div>
+  <% } %>
+  <button type="submit">Guardar</button>
+</form>

@@ -1,0 +1,35 @@
+<%- include('../partials/header') %>
+<div class="centered-content">
+  <h2>Cursos Disponíveis</h2>
+  <table style="width:100%; margin-bottom:1em;">
+    <tr>
+      <th>Título</th>
+      <th>Descrição</th>
+      <th>Capacidade</th>
+      <th>Período</th>
+      <th>Formador</th>
+      <th>Ações</th>
+    </tr>
+    <% courses.forEach(course => { %>
+      <tr>
+        <td><%= course.title %></td>
+        <td><%= course.description %></td>
+        <td><%= course.max_capacity %></td>
+        <td><%= course.start_date.toISOString().slice(0,10) %> a <%= course.end_date.toISOString().slice(0,10) %></td>
+        <td><%= course.instructor_id %></td>
+        <td>
+          <% if (user && (user.role === 'gestor' || (user.role === 'formador' && user.id === course.instructor_id))) { %>
+            <a href="/courses/<%= course.id %>/edit" class="blue-button">Editar</a>
+            <form method="POST" action="/courses/<%= course.id %>/delete" style="display:inline;">
+              <button type="submit" class="blue-button" style="background:#dc3545;">Excluir</button>
+            </form>
+          <% } %>
+        </td>
+      </tr>
+    <% }) %>
+  </table>
+  <% if (user && user.role === 'gestor') { %>
+    <a href="/courses/create" class="blue-button">Criar Novo Curso</a>
+  <% } %>
+</div>
+<%- include('../partials/footer') %>

@@ -1,0 +1,46 @@
+<%- include('../partials/header') %>
+
+<!-- Adicione o Font Awesome para o ícone de olho -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+<h2 class="form-title">Registrar Usuário</h2>
+<form method="POST" action="/users/register" autocomplete="off" class="register-form">
+  <input name="name" placeholder="Nome completo" required />
+  <input name="date_of_birth" type="date" required />
+  <input name="nif" placeholder="NIF" required />
+  <input name="email" placeholder="email" type="email" required />
+  <input name="phone" placeholder="Telefone" />
+  <input name="address" placeholder="Endereço" />
+
+  <div class="password-wrapper">
+    <input id="passwordField" name="password" type="password" placeholder="Senha" required />
+    <i class="far fa-eye" id="togglePassword" title="Mostrar/ocultar senha"></i>
+  </div>
+
+  <select name="role" required>
+    <option value="formando">Formando</option>
+    <option value="formador">Formador</option>
+    <option value="gestor">Gestor</option>
+  </select>
+
+  <button type="submit" class="blue-button">Registrar</button>
+</form>
+
+<% if (error) { %>
+  <p style="color:red; text-align:center;"><%= error %></p>
+<% } %>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const passwordField = document.getElementById('passwordField');
+    const togglePassword = document.getElementById('togglePassword');
+    togglePassword.addEventListener('click', function() {
+      const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+      passwordField.setAttribute('type', type);
+      this.classList.toggle('fa-eye');
+      this.classList.toggle('fa-eye-slash');
+    });
+  });
+</script>
+
+<%- include('../partials/footer') %>

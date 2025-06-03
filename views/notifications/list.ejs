@@ -1,0 +1,17 @@
+<%- include('../partials/header') %>
+<h2>Minhas Notificações</h2>
+<table>
+  <tr>
+    <th>Tipo</th>
+    <th>Conteúdo</th>
+    <th>Status</th>
+  </tr>
+  <% notifications.forEach(n => { %>
+    <tr>
+      <td><%= n.type %></td>
+      <td><%= n.content %></td>
+      <td><%= n.status %></td>
+    </tr>
+  <% }) %>
+</table>
+<%- include('../partials/footer') %>

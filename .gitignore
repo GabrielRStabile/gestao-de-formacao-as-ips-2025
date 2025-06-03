@@ -1,3 +1,6 @@
+<<<<<<< HEAD
+.env
+=======
 # Environment variables and configuration
 .env
 .env.*
@@ -101,3 +104,4 @@ config.local.js
 config.dev.js
 local_settings.py
 settings.local.php
+>>>>>>> 0c6c5a0b34f4a051b2148a27c680c09d39be53ff

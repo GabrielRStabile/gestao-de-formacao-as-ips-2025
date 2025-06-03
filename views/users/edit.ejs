@@ -1,0 +1,15 @@
+<%- include('../partials/header') %>
+<h2 class="form-title">Editar Perfil</h2>
+<form method="POST" action="/users/edit" class="register-form">
+  <input name="name" value="<%= user.name %>" placeholder="Nome" required />
+  <input name="date_of_birth" type="date" value="<%= user.date_of_birth.toISOString().slice(0,10) %>" required />
+  <input name="nif" value="<%= user.nif %>" placeholder="NIF" required />
+  <input name="email" type="email" value="<%= user.email %>" required />
+  <input name="phone" value="<%= user.phone %>" placeholder="Telefone" />
+  <input name="address" value="<%= user.address %>" placeholder="Endereço" />
+  <button type="submit" class="blue-button">Salvar Alterações</button>
+</form>
+<% if (error) { %>
+  <p style="color:red; text-align:center;"><%= error %></p>
+<% } %>
+<%- include('../partials/footer') %>

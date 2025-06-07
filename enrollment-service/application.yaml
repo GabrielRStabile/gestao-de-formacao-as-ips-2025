@@ -1,0 +1,14 @@
+# Certificate Service Application Configuration
+# Configuration settings for the certificate service
+
+# OpenAPI documentation settings
+openapi:
+  title: Certificate Service API
+  version: 1.0.0
+  description: Comprehensive certificate service with REST endpoints for user management and security
+  enable: true
+
+# Server configuration
+server:
+  port: 8080
+  host: localhost

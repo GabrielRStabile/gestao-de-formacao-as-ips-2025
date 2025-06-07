@@ -1,0 +1,38 @@
+name: enrollment_service
+description: Enrollment service for user management with REST endpoints and security features
+version: 1.0.0
+
+environment:
+  sdk: ^3.7.2
+
+# Runtime dependencies
+dependencies:
+  # AMQP client for message queue integration
+  dart_amqp: ^0.3.1
+  # Database ORM for PostgreSQL integration
+  drift: ^2.26.1
+  drift_postgres: ^1.3.0
+  # PostgreSQL driver
+  postgres: ^3.5.6
+  # Vaden web framework
+  vaden: ^0.0.12
+  # Environment configuration loader
+  dotenv: ^4.2.0
+  # MinIO/S3 client for object storage
+  minio: ^3.5.7
+  # UUID generation
+  uuid: ^4.5.1
+
+
+# Development dependencies
+dev_dependencies:
+  # Build system for code generation
+  build_runner: ^2.4.14
+  # Drift ORM code generator
+  drift_dev: ^2.26.1
+  # Dart linting rules
+  lints: ^5.0.0
+  # Vaden framework scanner for DI and routing
+  vaden_class_scanner: ^0.0.12
+  # Testing framework
+  test: ^1.26.2

@@ -201,6 +201,71 @@ class IssuedCertificateService {
     }
   }
 
+  /// Downloads a certificate for formando role
+  ///
+  /// [request] The request containing certificate ID and user context
+  ///
+  /// Returns the download response with redirect URL
+  /// Throws [UnauthorizedException] if user is not formando
+  /// Throws [NotFoundException] if certificate is not found
+  /// Throws [ValidationException] if certificate cannot be downloaded
+  Future<CertificateDownloadResponseDto> downloadCertificate(
+    DownloadCertificateRequestDto request,
+  ) async {
+    try {
+      // Validate role authorization
+      if (request.role != 'FORMANDO') {
+        throw UnauthorizedException('Only formando can download certificates');
+      }
+
+      // Validate user ID is present
+      if (request.userId == null || request.userId!.isEmpty) {
+        throw ValidationException('User ID is required');
+      }
+
+      // Get certificate
+      final certificate = await _issuedCertificateRepository.getCertificateById(
+        request.certificateId,
+      );
+
+      if (certificate == null) {
+        throw NotFoundException('Certificate not found');
+      }
+
+      // Validate that the certificate belongs to the requesting user
+      if (certificate.traineeUserId != request.userId) {
+        throw UnauthorizedException(
+          'Formando tentando baixar certificado de outro formando',
+        );
+      }
+
+      // Validate certificate status and blob URL
+      if (certificate.status != 'ISSUED') {
+        throw NotFoundException('certificateId não foi aprovado pelo formador');
+      }
+
+      if (certificate.certificateBlobUrl == null ||
+          certificate.certificateBlobUrl!.isEmpty) {
+        throw NotFoundException(
+          'certificateId não tem blobUrl (não foi emitido)',
+        );
+      }
+
+      return CertificateDownloadResponseDto(
+        downloadUrl: certificate.certificateBlobUrl!,
+        certificateId: request.certificateId,
+        message: 'Certificate download URL retrieved successfully',
+      );
+    } catch (e) {
+      if (e is UnauthorizedException ||
+          e is NotFoundException ||
+          e is ValidationException) {
+        rethrow;
+      }
+      throw Exception('Failed to download certificate: ${e.toString()}');
+    }
+  }
+
   /// Converts an IssuedCertificate model to DTO
   ///
   /// [certificate] The certificate model to convert

@@ -1116,6 +1116,137 @@ class VadenApplicationImpl implements VadenApplication {
         handlerCertificateControllerlistMyCertificates,
       ),
     );
+    paths['/certificates/my-certificates/{certificateId}/download'] =
+        <String, dynamic>{
+          ...paths['/certificates/my-certificates/{certificateId}/download'] ??
+              <String, dynamic>{},
+          'get': {
+            'tags': ['Certificate Management'],
+            'summary': '',
+            'description': '',
+            'responses': <String, dynamic>{},
+            'parameters': <Map<String, dynamic>>[],
+            'security': <Map<String, dynamic>>[],
+          },
+        };
+
+    paths['/certificates/my-certificates/{certificateId}/download']['get']['security'] =
+        [
+          {'bearer': []},
+        ];
+    paths['/certificates/my-certificates/{certificateId}/download']['get']['summary'] =
+        'Download my certificate';
+    paths['/certificates/my-certificates/{certificateId}/download']['get']['description'] =
+        'Downloads a certificate for the authenticated formando user. Returns a redirect to the certificate blob URL. Requires Formando role.';
+    paths['/certificates/my-certificates/{certificateId}/download']['get']['responses']['302'] =
+        {
+          'description': 'Redirect to certificate download URL',
+          'content': <String, dynamic>{},
+        };
+
+    paths['/certificates/my-certificates/{certificateId}/download']['get']['responses']['400'] =
+        {
+          'description': 'Invalid certificate ID',
+          'content': <String, dynamic>{},
+        };
+
+    paths['/certificates/my-certificates/{certificateId}/download']['get']['responses']['400']['content']['application/json'] =
+        <String, dynamic>{};
+
+    paths['/certificates/my-certificates/{certificateId}/download']['get']['responses']['400']['content']['application/json']['schema'] =
+        {'\$ref': '#/components/schemas/ErrorDto'};
+
+    paths['/certificates/my-certificates/{certificateId}/download']['get']['responses']['401'] =
+        {
+          'description': 'Token JWT ausente ou inválido',
+          'content': <String, dynamic>{},
+        };
+
+    paths['/certificates/my-certificates/{certificateId}/download']['get']['responses']['401']['content']['application/json'] =
+        <String, dynamic>{};
+
+    paths['/certificates/my-certificates/{certificateId}/download']['get']['responses']['401']['content']['application/json']['schema'] =
+        {'\$ref': '#/components/schemas/ErrorDto'};
+
+    paths['/certificates/my-certificates/{certificateId}/download']['get']['responses']['403'] =
+        {
+          'description':
+              'Formando tentando baixar certificado de outro formando',
+          'content': <String, dynamic>{},
+        };
+
+    paths['/certificates/my-certificates/{certificateId}/download']['get']['responses']['403']['content']['application/json'] =
+        <String, dynamic>{};
+
+    paths['/certificates/my-certificates/{certificateId}/download']['get']['responses']['403']['content']['application/json']['schema'] =
+        {'\$ref': '#/components/schemas/ErrorDto'};
+
+    paths['/certificates/my-certificates/{certificateId}/download']['get']['responses']['404'] = {
+      'description':
+          'CertificateId não encontrado, certificateId não tem blobUrl (não foi emitido), certificateId não foi aprovado pelo formador',
+      'content': <String, dynamic>{},
+    };
+
+    paths['/certificates/my-certificates/{certificateId}/download']['get']['responses']['404']['content']['application/json'] =
+        <String, dynamic>{};
+
+    paths['/certificates/my-certificates/{certificateId}/download']['get']['responses']['404']['content']['application/json']['schema'] =
+        {'\$ref': '#/components/schemas/ErrorDto'};
+
+    paths['/certificates/my-certificates/{certificateId}/download']['get']['responses']['500'] =
+        {
+          'description': 'Ocorreu um erro interno ao processar sua solicitação',
+          'content': <String, dynamic>{},
+        };
+
+    paths['/certificates/my-certificates/{certificateId}/download']['get']['responses']['500']['content']['application/json'] =
+        <String, dynamic>{};
+
+    paths['/certificates/my-certificates/{certificateId}/download']['get']['responses']['500']['content']['application/json']['schema'] =
+        {'\$ref': '#/components/schemas/ErrorDto'};
+
+    var pipelineCertificateControllerdownloadCertificate = const Pipeline();
+    pipelineCertificateControllerdownloadCertificate =
+        pipelineCertificateControllerdownloadCertificate.addMiddleware((
+          Handler inner,
+        ) {
+          return (Request request) async {
+            final guard = _injector.get<TokenDecodeMiddleware>();
+            return await guard.handler(request, inner);
+          };
+        });
+    paths['/certificates/my-certificates/{certificateId}/download']['get']['parameters']
+        ?.add({
+          'name': 'certificateId',
+          'in': 'path',
+          'required': true,
+          'schema': {'type': 'string'},
+        });
+
+    final handlerCertificateControllerdownloadCertificate =
+        (Request request) async {
+          if (request.params['certificateId'] == null) {
+            return Response(
+              400,
+              body: jsonEncode({
+                'error': 'Path Param is required (certificateId)',
+              }),
+            );
+          }
+          final certificateId = _parse<String>(
+            request.params['certificateId'],
+          )!;
+
+          final ctrl = _injector.get<CertificateController>();
+          final result = await ctrl.downloadCertificate(certificateId, request);
+          return result;
+        };
+    routerCertificateController.get(
+      '/my-certificates/{certificateId}/download',
+      pipelineCertificateControllerdownloadCertificate.addHandler(
+        handlerCertificateControllerdownloadCertificate,
+      ),
+    );
     _router.mount('/certificates', routerCertificateController.call);
 
     _injector.addLazySingleton(AmqpProvider.new);
@@ -1754,6 +1885,59 @@ class _DSON extends DSON {
         },
       },
       "required": ["certificates", "pagination"],
+    };
+
+    fromJsonMap[DownloadCertificateRequestDto] = (Map<String, dynamic> json) {
+      return Function.apply(DownloadCertificateRequestDto.new, [], {
+        #certificateId: json['certificateId'],
+        #userId: json['userId'],
+        #email: json['email'],
+        #role: json['role'],
+      });
+    };
+    toJsonMap[DownloadCertificateRequestDto] = (object) {
+      final obj = object as DownloadCertificateRequestDto;
+      return {
+        'certificateId': obj.certificateId,
+        'userId': obj.userId,
+        'email': obj.email,
+        'role': obj.role,
+      };
+    };
+    toOpenApiMap[DownloadCertificateRequestDto] = {
+      "type": "object",
+      "properties": <String, dynamic>{
+        "certificateId": {"type": "string"},
+        "userId": {"type": "string"},
+        "email": {"type": "string"},
+        "role": {"type": "string"},
+      },
+      "required": ["certificateId"],
+    };
+
+    fromJsonMap[CertificateDownloadResponseDto] = (Map<String, dynamic> json) {
+      return Function.apply(CertificateDownloadResponseDto.new, [], {
+        #downloadUrl: json['downloadUrl'],
+        #certificateId: json['certificateId'],
+        #message: json['message'],
+      });
+    };
+    toJsonMap[CertificateDownloadResponseDto] = (object) {
+      final obj = object as CertificateDownloadResponseDto;
+      return {
+        'downloadUrl': obj.downloadUrl,
+        'certificateId': obj.certificateId,
+        'message': obj.message,
+      };
+    };
+    toOpenApiMap[CertificateDownloadResponseDto] = {
+      "type": "object",
+      "properties": <String, dynamic>{
+        "downloadUrl": {"type": "string"},
+        "certificateId": {"type": "string"},
+        "message": {"type": "string"},
+      },
+      "required": ["downloadUrl", "certificateId", "message"],
     };
 
     return (fromJsonMap, toJsonMap, toOpenApiMap);

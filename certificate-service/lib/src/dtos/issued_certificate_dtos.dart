@@ -308,3 +308,64 @@ class ListMyCertificatesResponseDto {
     required this.pagination,
   });
 }
+
+/// Request DTO for downloading a certificate (formando role)
+///
+/// Used by formando role to download their own certificate
+@DTO()
+class DownloadCertificateRequestDto
+    with Validator<DownloadCertificateRequestDto> {
+  /// Certificate ID to download
+  final String certificateId;
+
+  /// User ID from JWT token
+  final String? userId;
+
+  /// User email from JWT token
+  final String? email;
+
+  /// User role from JWT token
+  final String? role;
+
+  const DownloadCertificateRequestDto({
+    required this.certificateId,
+    this.userId,
+    this.email,
+    this.role,
+  });
+
+  @override
+  LucidValidator<DownloadCertificateRequestDto> validate(
+    ValidatorBuilder<DownloadCertificateRequestDto> builder,
+  ) {
+    return builder
+      ..ruleFor(
+        (dto) => dto.certificateId,
+        key: 'certificateId',
+      ).isNotNull().notEmpty()
+      ..ruleFor(
+        (dto) => dto.role,
+        key: 'role',
+      ).isNotNull().equalTo((entity) => 'FORMANDO')
+      ..ruleFor((dto) => dto.userId, key: 'userId').isNotNull().notEmpty();
+  }
+}
+
+/// Response DTO for certificate download
+@DTO()
+class CertificateDownloadResponseDto {
+  /// URL to redirect to for downloading the certificate
+  final String downloadUrl;
+
+  /// Certificate ID that was requested
+  final String certificateId;
+
+  /// Message about the operation
+  final String message;
+
+  const CertificateDownloadResponseDto({
+    required this.downloadUrl,
+    required this.certificateId,
+    required this.message,
+  });
+}

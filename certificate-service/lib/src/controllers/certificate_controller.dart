@@ -556,6 +556,75 @@ class CertificateController {
 
     return response;
   }
+
+  /// Downloads a certificate for the authenticated formando user
+  ///
+  /// GET /certificates/my-certificates/{certificateId}/download
+  @ApiOperation(
+    summary: 'Download my certificate',
+    description:
+        'Downloads a certificate for the authenticated formando user. Returns a redirect to the certificate blob URL. Requires Formando role.',
+  )
+  @ApiResponse(302, description: 'Redirect to certificate download URL')
+  @ApiResponse(
+    400,
+    description: 'Invalid certificate ID',
+    content: ApiContent(type: 'application/json', schema: ErrorDto),
+  )
+  @ApiResponse(
+    401,
+    description: 'Token JWT ausente ou inválido',
+    content: ApiContent(type: 'application/json', schema: ErrorDto),
+  )
+  @ApiResponse(
+    403,
+    description: 'Formando tentando baixar certificado de outro formando',
+    content: ApiContent(type: 'application/json', schema: ErrorDto),
+  )
+  @ApiResponse(
+    404,
+    description:
+        'CertificateId não encontrado, certificateId não tem blobUrl (não foi emitido), certificateId não foi aprovado pelo formador',
+    content: ApiContent(type: 'application/json', schema: ErrorDto),
+  )
+  @ApiResponse(
+    500,
+    description: 'Ocorreu um erro interno ao processar sua solicitação',
+    content: ApiContent(type: 'application/json', schema: ErrorDto),
+  )
+  @ApiSecurity(['bearer'])
+  @UseMiddleware([TokenDecodeMiddleware])
+  @Get('/my-certificates/{certificateId}/download')
+  Future<Response> downloadCertificate(
+    @Param('certificateId') String certificateId,
+    Request request,
+  ) async {
+    // Create request DTO with path parameter and context
+    final requestDto = DownloadCertificateRequestDto(
+      certificateId: certificateId,
+      userId: request.userId,
+      email: request.email,
+      role: request.role,
+    );
+
+    // Validate the request DTO
+    final validationResult = requestDto
+        .validate(ValidatorBuilder<DownloadCertificateRequestDto>())
+        .validate(requestDto);
+
+    if (!validationResult.isValid) {
+      throw ValidationError(
+        validationResult.exceptions.map((e) => e.message).toList(),
+      );
+    }
+
+    final response = await _issuedCertificateService.downloadCertificate(
+      requestDto,
+    );
+
+    // Return a 302 redirect response to the blob URL
+    return Response(302)..headers['Location'] = response.downloadUrl;
+  }
 }
 
 extension on Request {

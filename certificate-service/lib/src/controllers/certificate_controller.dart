@@ -286,6 +286,50 @@ class CertificateController {
 
     return response;
   }
+
+  /// Deletes an existing certificate template
+  ///
+  /// DELETE /certificates/templates/{templateId}
+  @ApiOperation(
+    summary: 'Delete certificate template',
+    description:
+        'Deletes an existing certificate template from storage and database. Requires Gestor role.',
+  )
+  @ApiResponse(204, description: 'Template deleted successfully')
+  @ApiResponse(
+    401,
+    description: 'Token JWT ausente ou inválido',
+    content: ApiContent(type: 'application/json', schema: ErrorDto),
+  )
+  @ApiResponse(
+    403,
+    description: 'Usuário não é gestor',
+    content: ApiContent(type: 'application/json', schema: ErrorDto),
+  )
+  @ApiResponse(
+    404,
+    description: 'Template não encontrado',
+    content: ApiContent(type: 'application/json', schema: ErrorDto),
+  )
+  @ApiResponse(
+    500,
+    description: 'Ocorreu um erro interno ao processar sua solicitação',
+    content: ApiContent(type: 'application/json', schema: ErrorDto),
+  )
+  @ApiSecurity(['bearer'])
+  @UseMiddleware([TokenDecodeMiddleware])
+  @Delete('/templates/{templateId}')
+  Future<void> deleteTemplate(
+    @Param('templateId') String templateId,
+    Request request,
+  ) async {
+    // Delete template
+    await _templateManagementService.deleteTemplate(
+      templateId: templateId,
+      userId: request.userId,
+      role: request.role,
+    );
+  }
 }
 
 extension on Request {

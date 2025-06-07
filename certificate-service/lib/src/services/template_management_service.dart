@@ -192,6 +192,55 @@ class TemplateManagementService {
     }
   }
 
+  /// Deletes an existing certificate template
+  ///
+  /// [templateId] The ID of the template to delete
+  /// [userId] ID of the user requesting the deletion
+  /// [role] Role of the user requesting the deletion
+  ///
+  /// Returns void on successful deletion
+  /// Throws [TemplateAccessForbiddenError] if user is not a gestor
+  /// Throws [TemplateNotFoundError] if template doesn't exist
+  /// Throws [TemplateServiceError] if there's an internal error
+  Future<void> deleteTemplate({
+    required String templateId,
+    required String? userId,
+    required String? role,
+  }) async {
+    try {
+      // Validate user role
+      _validateGestorRole(role);
+
+      // Check if template exists
+      final existingTemplate = await _templateRepository.getTemplateById(
+        templateId,
+      );
+      if (existingTemplate == null) {
+        throw TemplateNotFoundError('Template não encontrado');
+      }
+
+      // Delete template file from storage
+      await _certificateStorageService.deleteCertificateTemplate(
+        templateId: templateId,
+      );
+
+      // Delete template from database
+      final deleted = await _templateRepository.deleteTemplate(templateId);
+
+      if (!deleted) {
+        throw TemplateNotFoundError('Template não encontrado');
+      }
+    } on TemplateNotFoundError {
+      rethrow;
+    } on TemplateAccessForbiddenError {
+      rethrow;
+    } catch (e) {
+      throw TemplateServiceError(
+        'Ocorreu um erro interno ao processar sua solicitação: ${e.toString()}',
+      );
+    }
+  }
+
   /// Validates that the user has gestor role
   void _validateGestorRole(String? role) {
     if (role == null || role.toLowerCase() != 'gestor') {

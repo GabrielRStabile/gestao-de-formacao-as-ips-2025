@@ -579,6 +579,116 @@ class VadenApplicationImpl implements VadenApplication {
         handlerCertificateControllerupdateTemplate,
       ),
     );
+    paths['/certificates/templates/{templateId}'] = <String, dynamic>{
+      ...paths['/certificates/templates/{templateId}'] ?? <String, dynamic>{},
+      'delete': {
+        'tags': ['Certificate Management'],
+        'summary': '',
+        'description': '',
+        'responses': <String, dynamic>{},
+        'parameters': <Map<String, dynamic>>[],
+        'security': <Map<String, dynamic>>[],
+      },
+    };
+
+    paths['/certificates/templates/{templateId}']['delete']['security'] = [
+      {'bearer': []},
+    ];
+    paths['/certificates/templates/{templateId}']['delete']['summary'] =
+        'Delete certificate template';
+    paths['/certificates/templates/{templateId}']['delete']['description'] =
+        'Deletes an existing certificate template from storage and database. Requires Gestor role.';
+    paths['/certificates/templates/{templateId}']['delete']['responses']['204'] =
+        {
+          'description': 'Template deleted successfully',
+          'content': <String, dynamic>{},
+        };
+
+    paths['/certificates/templates/{templateId}']['delete']['responses']['401'] =
+        {
+          'description': 'Token JWT ausente ou inválido',
+          'content': <String, dynamic>{},
+        };
+
+    paths['/certificates/templates/{templateId}']['delete']['responses']['401']['content']['application/json'] =
+        <String, dynamic>{};
+
+    paths['/certificates/templates/{templateId}']['delete']['responses']['401']['content']['application/json']['schema'] =
+        {'\$ref': '#/components/schemas/ErrorDto'};
+
+    paths['/certificates/templates/{templateId}']['delete']['responses']['403'] =
+        {'description': 'Usuário não é gestor', 'content': <String, dynamic>{}};
+
+    paths['/certificates/templates/{templateId}']['delete']['responses']['403']['content']['application/json'] =
+        <String, dynamic>{};
+
+    paths['/certificates/templates/{templateId}']['delete']['responses']['403']['content']['application/json']['schema'] =
+        {'\$ref': '#/components/schemas/ErrorDto'};
+
+    paths['/certificates/templates/{templateId}']['delete']['responses']['404'] =
+        {
+          'description': 'Template não encontrado',
+          'content': <String, dynamic>{},
+        };
+
+    paths['/certificates/templates/{templateId}']['delete']['responses']['404']['content']['application/json'] =
+        <String, dynamic>{};
+
+    paths['/certificates/templates/{templateId}']['delete']['responses']['404']['content']['application/json']['schema'] =
+        {'\$ref': '#/components/schemas/ErrorDto'};
+
+    paths['/certificates/templates/{templateId}']['delete']['responses']['500'] =
+        {
+          'description': 'Ocorreu um erro interno ao processar sua solicitação',
+          'content': <String, dynamic>{},
+        };
+
+    paths['/certificates/templates/{templateId}']['delete']['responses']['500']['content']['application/json'] =
+        <String, dynamic>{};
+
+    paths['/certificates/templates/{templateId}']['delete']['responses']['500']['content']['application/json']['schema'] =
+        {'\$ref': '#/components/schemas/ErrorDto'};
+
+    var pipelineCertificateControllerdeleteTemplate = const Pipeline();
+    pipelineCertificateControllerdeleteTemplate =
+        pipelineCertificateControllerdeleteTemplate.addMiddleware((
+          Handler inner,
+        ) {
+          return (Request request) async {
+            final guard = _injector.get<TokenDecodeMiddleware>();
+            return await guard.handler(request, inner);
+          };
+        });
+    paths['/certificates/templates/{templateId}']['delete']['parameters']?.add({
+      'name': 'templateId',
+      'in': 'path',
+      'required': true,
+      'schema': {'type': 'string'},
+    });
+
+    final handlerCertificateControllerdeleteTemplate = (Request request) async {
+      if (request.params['templateId'] == null) {
+        return Response(
+          400,
+          body: jsonEncode({'error': 'Path Param is required (templateId)'}),
+        );
+      }
+      final templateId = _parse<String>(request.params['templateId'])!;
+
+      final ctrl = _injector.get<CertificateController>();
+      final result = await ctrl.deleteTemplate(templateId, request);
+      final jsoResponse = _injector.get<DSON>().toJson<void>(result);
+      return Response.ok(
+        jsonEncode(jsoResponse),
+        headers: {'Content-Type': 'application/json'},
+      );
+    };
+    routerCertificateController.delete(
+      '/templates/{templateId}',
+      pipelineCertificateControllerdeleteTemplate.addHandler(
+        handlerCertificateControllerdeleteTemplate,
+      ),
+    );
     _router.mount('/certificates', routerCertificateController.call);
 
     _injector.addLazySingleton(OpenApiConfig.create(paths, apis).call);

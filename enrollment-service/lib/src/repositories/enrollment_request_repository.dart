@@ -4,6 +4,17 @@ import 'package:vaden/vaden.dart';
 
 import '../models/database.dart';
 
+/// Result class for paginated enrollment queries
+class PaginatedEnrollmentResult {
+  final List<EnrollmentRequest> enrollments;
+  final int totalItems;
+
+  const PaginatedEnrollmentResult({
+    required this.enrollments,
+    required this.totalItems,
+  });
+}
+
 /// Repository for managing enrollment request data
 ///
 /// Provides CRUD operations for enrollment requests in the database.
@@ -287,6 +298,114 @@ class EnrollmentRequestRepository {
           0;
     } catch (e) {
       throw Exception('Failed to count enrollment requests: ${e.toString()}');
+    }
+  }
+
+  /// Gets enrollment requests for a trainee with pagination and filters
+  ///
+  /// [traineeUserId] The trainee user ID to search for
+  /// [page] Page number (1-based)
+  /// [limit] Maximum number of records to return
+  /// [status] Optional status filter
+  /// [sortBy] Field to sort by (requestDate, status, updatedAt)
+  /// [sortOrder] Sort order (asc, desc)
+  ///
+  /// Returns paginated enrollment requests for the trainee
+  /// Throws [Exception] if query fails
+  Future<PaginatedEnrollmentResult> getEnrollmentsByTraineeWithPagination({
+    required String traineeUserId,
+    required int page,
+    required int limit,
+    String? status,
+    String sortBy = 'requestDate',
+    String sortOrder = 'desc',
+  }) async {
+    try {
+      // Calculate offset for pagination (1-based page)
+      final offset = (page - 1) * limit;
+
+      // Build the main query
+      var query = _database.database.select(
+        _database.database.enrollmentRequests,
+      )..where((e) => e.traineeUserId.equals(traineeUserId));
+
+      // Apply status filter if provided
+      if (status != null && status.isNotEmpty) {
+        query = query..where((e) => e.status.equals(status));
+      }
+
+      // Apply sorting
+      final isAsc = sortOrder.toLowerCase() == 'asc';
+      switch (sortBy) {
+        case 'status':
+          query =
+              query..orderBy([
+                (e) =>
+                    isAsc
+                        ? OrderingTerm.asc(e.status)
+                        : OrderingTerm.desc(e.status),
+              ]);
+          break;
+        case 'updatedAt':
+          query =
+              query..orderBy([
+                (e) =>
+                    isAsc
+                        ? OrderingTerm.asc(e.updatedAt)
+                        : OrderingTerm.desc(e.updatedAt),
+              ]);
+          break;
+        case 'requestDate':
+        default:
+          query =
+              query..orderBy([
+                (e) =>
+                    isAsc
+                        ? OrderingTerm.asc(e.requestDate)
+                        : OrderingTerm.desc(e.requestDate),
+              ]);
+          break;
+      }
+
+      query = query..limit(limit, offset: offset);
+
+      // Get the enrollment requests
+      final enrollments = await query.get();
+
+      // Get total count for pagination
+      var countQuery =
+          _database.database.selectOnly(_database.database.enrollmentRequests)
+            ..addColumns([
+              _database.database.enrollmentRequests.enrollmentId.count(),
+            ])
+            ..where(
+              _database.database.enrollmentRequests.traineeUserId.equals(
+                traineeUserId,
+              ),
+            );
+
+      if (status != null && status.isNotEmpty) {
+        countQuery =
+            countQuery..where(
+              _database.database.enrollmentRequests.status.equals(status),
+            );
+      }
+
+      final countResult = await countQuery.getSingle();
+      final totalItems =
+          countResult.read(
+            _database.database.enrollmentRequests.enrollmentId.count(),
+          ) ??
+          0;
+
+      return PaginatedEnrollmentResult(
+        enrollments: enrollments,
+        totalItems: totalItems,
+      );
+    } catch (e) {
+      throw Exception(
+        'Failed to get paginated enrollment requests for trainee: ${e.toString()}',
+      );
     }
   }
 }

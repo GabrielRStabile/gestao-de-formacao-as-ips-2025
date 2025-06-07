@@ -186,4 +186,76 @@ class EnrollmentController {
 
     return response;
   }
+
+  /// Lists enrollment requests for the authenticated trainee
+  ///
+  /// GET /enrollments/my-enrollments
+  @ApiOperation(
+    summary: 'List my enrollment requests',
+    description:
+        'Lists enrollment requests for the authenticated trainee with optional pagination and filters.',
+  )
+  @ApiResponse(
+    200,
+    description: 'Enrollment requests retrieved successfully',
+    content: ApiContent(
+      type: 'application/json',
+      schema: PaginatedEnrollmentsDto,
+    ),
+  )
+  @ApiResponse(
+    400,
+    description: 'Invalid query parameters',
+    content: ApiContent(type: 'application/json', schema: ErrorDto),
+  )
+  @ApiResponse(
+    401,
+    description: 'Token JWT ausente ou inválido',
+    content: ApiContent(type: 'application/json', schema: ErrorDto),
+  )
+  @ApiResponse(
+    403,
+    description: 'Usuário não é formando',
+    content: ApiContent(type: 'application/json', schema: ErrorDto),
+  )
+  @ApiResponse(
+    500,
+    description: 'Ocorreu um erro interno ao processar sua solicitação',
+    content: ApiContent(type: 'application/json', schema: ErrorDto),
+  )
+  @ApiSecurity(['bearer'])
+  @UseMiddleware([TokenDecodeMiddleware])
+  @Get('/my-enrollments')
+  Future<PaginatedEnrollmentsDto> getMyEnrollments(
+    @Query() MyEnrollmentsQueryDto queryDto,
+    Request request,
+  ) async {
+    // Get user context from middleware
+    final userId = request.context['userId'] as String?;
+    final role = request.context['role'] as String?;
+
+    // Validate role - only formandos can view their enrollments
+    if (role != 'formando') {
+      throw ValidationError(['Only formandos can view enrollment requests']);
+    }
+
+    // Validate query parameters
+    final validationResult = queryDto
+        .validate(ValidatorBuilder<MyEnrollmentsQueryDto>())
+        .validate(queryDto);
+
+    if (!validationResult.isValid) {
+      throw ValidationError(
+        validationResult.exceptions.map((e) => e.message).toList(),
+      );
+    }
+
+    // Get enrollments for the trainee
+    final response = await _enrollmentService.getMyEnrollments(
+      traineeUserId: userId!,
+      queryDto: queryDto,
+    );
+
+    return response;
+  }
 }

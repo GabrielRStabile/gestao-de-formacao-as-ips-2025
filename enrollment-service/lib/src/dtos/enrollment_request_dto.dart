@@ -193,3 +193,159 @@ class EnrollmentCancelDto with Validator<EnrollmentCancelDto> {
       ).maxLength(500).when((r) => r.reason != null);
   }
 }
+
+/// Data Transfer Object for querying trainee enrollments with pagination
+///
+/// Used for GET /my-enrollments endpoint to support filtering, sorting, and pagination.
+@DTO()
+class MyEnrollmentsQueryDto with Validator<MyEnrollmentsQueryDto> {
+  /// Page number (1-based)
+  final int page;
+
+  /// Number of items per page
+  final int limit;
+
+  /// Sort field (requestDate, status, updatedAt)
+  final String sortBy;
+
+  /// Sort direction (asc, desc)
+  final String sortOrder;
+
+  /// Filter by enrollment status (optional)
+  final String? status;
+
+  /// Gets the offset for database queries
+  int get offset => (page - 1) * limit;
+
+  const MyEnrollmentsQueryDto({
+    this.page = 1,
+    this.limit = 10,
+    this.sortBy = 'requestDate',
+    this.sortOrder = 'desc',
+    this.status,
+  });
+
+  /// Creates an instance from query parameters
+  factory MyEnrollmentsQueryDto.fromQueryParams(Map<String, String> params) {
+    return MyEnrollmentsQueryDto(
+      page: int.tryParse(params['page'] ?? '1') ?? 1,
+      limit: int.tryParse(params['limit'] ?? '10') ?? 10,
+      sortBy: params['sortBy'] ?? 'requestDate',
+      sortOrder: params['sortOrder'] ?? 'desc',
+      status: params['status'],
+    );
+  }
+
+  /// Validates the query parameters
+  @override
+  LucidValidator<MyEnrollmentsQueryDto> validate(
+    ValidatorBuilder<MyEnrollmentsQueryDto> builder,
+  ) {
+    return builder
+      ..ruleFor((r) => r.page, key: 'page').greaterThan(0)
+      ..ruleFor((r) => r.limit, key: 'limit').greaterThan(0).lessThan(100)
+      ..ruleFor((r) => r.sortBy, key: 'sortBy').must(
+        (value) => ['requestDate', 'status', 'updatedAt'].contains(value),
+        'Invalid sort field',
+        '400',
+      )
+      ..ruleFor((r) => r.sortOrder, key: 'sortOrder').must(
+        (value) => value == 'asc' || value == 'desc',
+        'Invalid sort order',
+        '400',
+      )
+      ..ruleFor((r) => r.status, key: 'status')
+          .must(
+            (value) => value == null || EnrollmentStatus.isValid(value),
+            'Invalid status',
+            '400',
+          )
+          .when((r) => r.status != null);
+  }
+}
+
+/// Pagination metadata for paginated responses
+///
+/// Contains information about the current page, total items,
+/// and navigation flags to help clients implement pagination.
+@DTO()
+class PaginationDto {
+  /// Current page number (1-based)
+  final int currentPage;
+
+  /// Number of items per page
+  final int pageSize;
+
+  /// Total number of items across all pages
+  final int totalItems;
+
+  /// Total number of pages available
+  final int totalPages;
+
+  /// Whether there is a next page available
+  final bool hasNext;
+
+  /// Whether there is a previous page available
+  final bool hasPrevious;
+
+  const PaginationDto({
+    required this.currentPage,
+    required this.pageSize,
+    required this.totalItems,
+    required this.totalPages,
+    required this.hasNext,
+    required this.hasPrevious,
+  });
+
+  /// Creates pagination from query parameters and total count
+  factory PaginationDto.fromQuery({
+    required int page,
+    required int limit,
+    required int totalItems,
+  }) {
+    final totalPages = (totalItems / limit).ceil();
+    return PaginationDto(
+      currentPage: page,
+      pageSize: limit,
+      totalItems: totalItems,
+      totalPages: totalPages,
+      hasNext: page < totalPages,
+      hasPrevious: page > 1,
+    );
+  }
+
+  /// Converts the instance to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'currentPage': currentPage,
+      'pageSize': pageSize,
+      'totalItems': totalItems,
+      'totalPages': totalPages,
+      'hasNext': hasNext,
+      'hasPrevious': hasPrevious,
+    };
+  }
+}
+
+/// Response DTO for paginated enrollment requests
+///
+/// Contains the enrollment data along with pagination metadata
+/// to help clients navigate through large result sets.
+@DTO()
+class PaginatedEnrollmentsDto {
+  /// Pagination metadata
+  final PaginationDto pagination;
+
+  /// List of enrollment entries for the current page
+  final List<EnrollmentRequestResponseDto> data;
+
+  const PaginatedEnrollmentsDto({required this.pagination, required this.data});
+
+  /// Converts the instance to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'pagination': pagination.toJson(),
+      'data': data.map((enrollment) => enrollment.toJson()).toList(),
+    };
+  }
+}

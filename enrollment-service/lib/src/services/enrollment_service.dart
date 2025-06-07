@@ -187,6 +187,58 @@ class EnrollmentService {
     );
   }
 
+  /// Gets enrollment requests for a specific trainee with pagination and filters
+  ///
+  /// [traineeUserId] The ID of the trainee user
+  /// [queryDto] Query parameters for pagination and filtering
+  ///
+  /// Returns paginated enrollment requests for the trainee
+  Future<PaginatedEnrollmentsDto> getMyEnrollments({
+    required String traineeUserId,
+    required MyEnrollmentsQueryDto queryDto,
+  }) async {
+    // Validate trainee user ID
+    if (traineeUserId.trim().isEmpty) {
+      throw Exception('Trainee user ID cannot be empty');
+    }
+
+    try {
+      // Get paginated enrollments from repository
+      final result = await _enrollmentRequestRepository
+          .getEnrollmentsByTraineeWithPagination(
+            traineeUserId: traineeUserId,
+            page: queryDto.page,
+            limit: queryDto.limit,
+            status: queryDto.status,
+            sortBy: queryDto.sortBy,
+            sortOrder: queryDto.sortOrder,
+          );
+
+      // Create pagination metadata
+      final pagination = PaginationDto.fromQuery(
+        page: queryDto.page,
+        limit: queryDto.limit,
+        totalItems: result.totalItems,
+      );
+
+      // Convert enrollment requests to response DTOs
+      final enrollmentDtos =
+          result.enrollments
+              .map(
+                (enrollment) =>
+                    EnrollmentRequestResponseDto.fromModel(enrollment),
+              )
+              .toList();
+
+      return PaginatedEnrollmentsDto(
+        pagination: pagination,
+        data: enrollmentDtos,
+      );
+    } catch (e) {
+      throw Exception('Failed to get enrollment requests: ${e.toString()}');
+    }
+  }
+
   /// Validates an enrollment request before creation
   ///
   /// [traineeUserId] The trainee user ID

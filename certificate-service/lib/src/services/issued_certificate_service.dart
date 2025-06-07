@@ -3,6 +3,7 @@ import 'package:vaden/vaden.dart';
 import '../dtos/issued_certificate_dtos.dart';
 import '../models/database.dart';
 import '../repositories/issued_certificate_repository.dart';
+import 'event_publisher.dart';
 
 /// Service for managing issued certificate operations
 ///
@@ -11,9 +12,13 @@ import '../repositories/issued_certificate_repository.dart';
 @Service()
 class IssuedCertificateService {
   final IssuedCertificateRepository _issuedCertificateRepository;
+  final EventPublisher _eventPublisher;
 
   /// Creates a new IssuedCertificateService instance
-  IssuedCertificateService(this._issuedCertificateRepository);
+  IssuedCertificateService(
+    this._issuedCertificateRepository,
+    this._eventPublisher,
+  );
 
   /// Lists pending approval certificates for formador role
   ///
@@ -116,6 +121,20 @@ class IssuedCertificateService {
 
       if (updatedCertificate == null) {
         throw Exception('Failed to update certificate status');
+      }
+
+      // Publish certificate approved event
+      try {
+        await _eventPublisher.publishCertificateApproved(
+          certificateId: certificateId,
+          traineeUserId: currentCertificate.traineeUserId,
+          courseId: currentCertificate.courseId,
+          approvedByUserId: request.userId!,
+          status: 'APPROVED_FOR_EMISSION',
+        );
+      } catch (eventError) {
+        // Log the error but don't fail the operation
+        print('Failed to publish certificate approved event: $eventError');
       }
 
       return CertificateApprovalResponseDto(

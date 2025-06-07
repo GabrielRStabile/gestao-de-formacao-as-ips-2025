@@ -18,6 +18,10 @@ class EventPublisher {
   static String get _username => env['AMQP_USER'] ?? 'guest';
   static String get _password => env['AMQP_PASSWORD'] ?? 'guest';
 
+  /// Exchange name for certificate events
+  static const String _certificateExchangeName = 'certificate.events';
+  late final Exchange _certificateExchange;
+
   /// Exchange name for audit events
   static const String _auditExchangeName = 'audit.events';
   late final Exchange _auditExchange;
@@ -33,6 +37,13 @@ class EventPublisher {
 
       _client = Client(settings: settings);
       _channel = await _client!.channel();
+
+      // Declare certificate events exchange
+      _certificateExchange = await _channel!.exchange(
+        _certificateExchangeName,
+        ExchangeType.TOPIC,
+        durable: true,
+      );
 
       _auditExchange = await _channel!.exchange(
         _auditExchangeName,
@@ -72,7 +83,7 @@ class EventPublisher {
     final event = {
       'eventId': uuid.v4(),
       'eventTimestamp': eventTimestamp.toIso8601String(),
-      'sourceService': 'auth-service',
+      'sourceService': 'certificate-service',
       'eventType': eventType.toString(),
       if (userId != null) 'userId': userId,
       if (targetEntityId != null) 'targetEntityId': targetEntityId,
@@ -84,6 +95,42 @@ class EventPublisher {
     await _publishToExchange(
       exchange: _auditExchange,
       routingKey: 'audit',
+      message: event,
+    );
+  }
+
+  /// Publishes a certificate approved event
+  ///
+  /// [certificateId] The ID of the approved certificate
+  /// [traineeUserId] The ID of the trainee who owns the certificate
+  /// [courseId] The ID of the course
+  /// [approvedByUserId] The ID of the formador who approved the certificate
+  /// [status] The new status of the certificate
+  Future<void> publishCertificateApproved({
+    required String certificateId,
+    required String traineeUserId,
+    required String courseId,
+    required String approvedByUserId,
+    required String status,
+  }) async {
+    final uuid = Uuid();
+    final eventTimestamp = DateTime.now();
+
+    final event = {
+      'eventId': uuid.v4(),
+      'eventTimestamp': eventTimestamp.toIso8601String(),
+      'sourceService': 'certificate-service',
+      'eventType': 'CERTIFICATE_APPROVED',
+      'certificateId': certificateId,
+      'traineeUserId': traineeUserId,
+      'courseId': courseId,
+      'approvedByUserId': approvedByUserId,
+      'status': status,
+    };
+
+    await _publishToExchange(
+      exchange: _certificateExchange,
+      routingKey: 'certificate.approved',
       message: event,
     );
   }

@@ -349,3 +349,134 @@ class PaginatedEnrollmentsDto {
     };
   }
 }
+
+/// Data Transfer Object for manager enrollment queries
+///
+/// Used by managers to list all enrollment requests with filtering,
+/// sorting, and pagination options.
+@DTO()
+class ManagerEnrollmentsQueryDto with Validator<ManagerEnrollmentsQueryDto> {
+  /// Page number for pagination (starting from 1)
+  final int page;
+
+  /// Number of items per page (max 100)
+  final int pageSize;
+
+  /// Filter by enrollment status
+  final String? status;
+
+  /// Filter by trainee ID
+  final String? traineeId;
+
+  /// Filter by course offering ID
+  final String? courseOfferingId;
+
+  /// Field to sort by
+  final String sortBy;
+
+  /// Sort order (asc or desc)
+  final String sortOrder;
+
+  /// Start date for filtering by request date (ISO 8601 format)
+  final String? startDate;
+
+  /// End date for filtering by request date (ISO 8601 format)
+  final String? endDate;
+
+  const ManagerEnrollmentsQueryDto({
+    this.page = 1,
+    this.pageSize = 10,
+    this.status,
+    this.traineeId,
+    this.courseOfferingId,
+    this.sortBy = 'requestDate',
+    this.sortOrder = 'desc',
+    this.startDate,
+    this.endDate,
+  });
+
+  /// Creates an instance from query parameters
+  factory ManagerEnrollmentsQueryDto.fromQuery(Map<String, String> query) {
+    return ManagerEnrollmentsQueryDto(
+      page: int.tryParse(query['page'] ?? '1') ?? 1,
+      pageSize: int.tryParse(query['pageSize'] ?? '10') ?? 10,
+      status: query['status'],
+      traineeId: query['traineeId'],
+      courseOfferingId: query['courseOfferingId'],
+      sortBy: query['sortBy'] ?? 'requestDate',
+      sortOrder: query['sortOrder'] ?? 'desc',
+      startDate: query['startDate'],
+      endDate: query['endDate'],
+    );
+  }
+
+  /// Converts the instance to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'page': page,
+      'pageSize': pageSize,
+      'status': status,
+      'traineeId': traineeId,
+      'courseOfferingId': courseOfferingId,
+      'sortBy': sortBy,
+      'sortOrder': sortOrder,
+      'startDate': startDate,
+      'endDate': endDate,
+    };
+  }
+
+  /// Validates the query parameters using the Vaden validation framework
+  @override
+  LucidValidator<ManagerEnrollmentsQueryDto> validate(
+    ValidatorBuilder<ManagerEnrollmentsQueryDto> builder,
+  ) {
+    return builder
+      ..ruleFor((r) => r.page, key: 'page').greaterThan(0)
+      ..ruleFor((r) => r.pageSize, key: 'pageSize').greaterThan(0).lessThan(101)
+      ..ruleFor((r) => r.sortBy, key: 'sortBy').must(
+        (value) => [
+          'requestDate',
+          'status',
+          'updatedAt',
+          'traineeId',
+          'courseOfferingId',
+        ].contains(value),
+        'Invalid sort field',
+        '400',
+      )
+      ..ruleFor((r) => r.sortOrder, key: 'sortOrder').must(
+        (value) => value == 'asc' || value == 'desc',
+        'Invalid sort order',
+        '400',
+      )
+      ..ruleFor((r) => r.status, key: 'status')
+          .must(
+            (value) => value == null || EnrollmentStatus.isValid(value),
+            'Invalid status',
+            '400',
+          )
+          .when((r) => r.status != null)
+      ..ruleFor(
+        (r) => r.traineeId,
+        key: 'traineeId',
+      ).minLength(1).maxLength(100).when((r) => r.traineeId != null)
+      ..ruleFor(
+        (r) => r.courseOfferingId,
+        key: 'courseOfferingId',
+      ).minLength(1).maxLength(100).when((r) => r.courseOfferingId != null)
+      ..ruleFor((r) => r.startDate, key: 'startDate')
+          .must(
+            (value) => value == null || DateTime.tryParse(value) != null,
+            'Invalid start date format (ISO 8601 required)',
+            '400',
+          )
+          .when((r) => r.startDate != null)
+      ..ruleFor((r) => r.endDate, key: 'endDate')
+          .must(
+            (value) => value == null || DateTime.tryParse(value) != null,
+            'Invalid end date format (ISO 8601 required)',
+            '400',
+          )
+          .when((r) => r.endDate != null);
+  }
+}

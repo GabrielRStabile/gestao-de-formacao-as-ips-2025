@@ -258,4 +258,74 @@ class EnrollmentController {
 
     return response;
   }
+
+  /// Lists all enrollment requests for managers
+  ///
+  /// GET /enrollments/
+  @ApiOperation(
+    summary: 'List enrollment requests for managers',
+    description:
+        'Lists all enrollment requests with advanced filtering and pagination options. Requires manager role.',
+  )
+  @ApiResponse(
+    200,
+    description: 'Enrollment requests retrieved successfully',
+    content: ApiContent(
+      type: 'application/json',
+      schema: PaginatedEnrollmentsDto,
+    ),
+  )
+  @ApiResponse(
+    400,
+    description: 'Invalid query parameters',
+    content: ApiContent(type: 'application/json', schema: ErrorDto),
+  )
+  @ApiResponse(
+    401,
+    description: 'Token JWT ausente ou inválido',
+    content: ApiContent(type: 'application/json', schema: ErrorDto),
+  )
+  @ApiResponse(
+    403,
+    description: 'Usuário não é manager',
+    content: ApiContent(type: 'application/json', schema: ErrorDto),
+  )
+  @ApiResponse(
+    500,
+    description: 'Ocorreu um erro interno ao processar sua solicitação',
+    content: ApiContent(type: 'application/json', schema: ErrorDto),
+  )
+  @ApiSecurity(['bearer'])
+  @UseMiddleware([TokenDecodeMiddleware])
+  @Get('/')
+  Future<PaginatedEnrollmentsDto> getAllEnrollments(
+    @Query() ManagerEnrollmentsQueryDto queryDto,
+    Request request,
+  ) async {
+    // Get user context from middleware
+    final role = request.context['role'] as String?;
+
+    // Validate role - only managers can view all enrollment requests
+    if (role != 'manager') {
+      throw ValidationError(['Only managers can view all enrollment requests']);
+    }
+
+    // Validate query parameters
+    final validationResult = queryDto
+        .validate(ValidatorBuilder<ManagerEnrollmentsQueryDto>())
+        .validate(queryDto);
+
+    if (!validationResult.isValid) {
+      throw ValidationError(
+        validationResult.exceptions.map((e) => e.message).toList(),
+      );
+    }
+
+    // Get enrollments for the manager
+    final response = await _enrollmentService.getEnrollmentsForManager(
+      queryDto: queryDto,
+    );
+
+    return response;
+  }
 }

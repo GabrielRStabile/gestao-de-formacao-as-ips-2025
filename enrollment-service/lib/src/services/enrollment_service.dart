@@ -239,6 +239,56 @@ class EnrollmentService {
     }
   }
 
+  /// Gets enrollment requests for managers with advanced filtering and pagination
+  ///
+  /// [queryDto] Query parameters for pagination and filtering
+  ///
+  /// Returns paginated enrollment requests for managers
+  Future<PaginatedEnrollmentsDto> getEnrollmentsForManager({
+    required ManagerEnrollmentsQueryDto queryDto,
+  }) async {
+    try {
+      // Get paginated enrollments from repository
+      final result = await _enrollmentRequestRepository
+          .getEnrollmentsForManagerWithPagination(
+            page: queryDto.page,
+            pageSize: queryDto.pageSize,
+            status: queryDto.status,
+            traineeId: queryDto.traineeId,
+            courseOfferingId: queryDto.courseOfferingId,
+            sortBy: queryDto.sortBy,
+            sortOrder: queryDto.sortOrder,
+            startDate: queryDto.startDate,
+            endDate: queryDto.endDate,
+          );
+
+      // Create pagination metadata
+      final pagination = PaginationDto.fromQuery(
+        page: queryDto.page,
+        limit: queryDto.pageSize,
+        totalItems: result.totalItems,
+      );
+
+      // Convert enrollment requests to response DTOs
+      final enrollmentDtos =
+          result.enrollments
+              .map(
+                (enrollment) =>
+                    EnrollmentRequestResponseDto.fromModel(enrollment),
+              )
+              .toList();
+
+      return PaginatedEnrollmentsDto(
+        pagination: pagination,
+        data: enrollmentDtos,
+      );
+    } catch (e) {
+      throw Exception(
+        'Failed to get enrollment requests for manager: ${e.toString()}',
+      );
+    }
+  }
+
   /// Validates an enrollment request before creation
   ///
   /// [traineeUserId] The trainee user ID

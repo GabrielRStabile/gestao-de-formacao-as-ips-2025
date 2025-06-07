@@ -130,6 +130,81 @@ class IssuedCertificateRepository {
     }
   }
 
+  /// Gets pending approval certificates with pagination and optional course filtering
+  ///
+  /// [courseId] Optional course ID to filter certificates
+  /// [page] Page number (1-based)
+  /// [limit] Number of items per page
+  ///
+  /// Returns a paginated list of pending certificates
+  Future<List<IssuedCertificate>> getPendingCertificatesWithPagination({
+    String? courseId,
+    required int page,
+    required int limit,
+  }) async {
+    try {
+      final query = _database.database.select(
+        _database.database.issuedCertificates,
+      );
+
+      // Filter by pending status
+      query.where((cert) => cert.status.equals('PENDING_APPROVAL'));
+
+      // Optional course filter
+      if (courseId != null) {
+        query.where((cert) => cert.courseId.equals(courseId));
+      }
+
+      // Order by creation date (most recent first)
+      query.orderBy([(cert) => OrderingTerm.desc(cert.createdAt)]);
+
+      // Apply pagination
+      final offset = (page - 1) * limit;
+      query.limit(limit, offset: offset);
+
+      return await query.get();
+    } catch (e) {
+      throw Exception('Failed to get pending certificates: ${e.toString()}');
+    }
+  }
+
+  /// Gets the total count of pending approval certificates
+  ///
+  /// [courseId] Optional course ID to filter certificates
+  ///
+  /// Returns the total count of pending certificates
+  Future<int> getPendingCertificatesCount({String? courseId}) async {
+    try {
+      final query = _database.database.selectOnly(
+        _database.database.issuedCertificates,
+      )..addColumns([
+        _database.database.issuedCertificates.certificateId.count(),
+      ]);
+
+      // Filter by pending status
+      query.where(
+        _database.database.issuedCertificates.status.equals('PENDING_APPROVAL'),
+      );
+
+      // Optional course filter
+      if (courseId != null) {
+        query.where(
+          _database.database.issuedCertificates.courseId.equals(courseId),
+        );
+      }
+
+      final result = await query.getSingle();
+      return result.read(
+            _database.database.issuedCertificates.certificateId.count(),
+          ) ??
+          0;
+    } catch (e) {
+      throw Exception(
+        'Failed to get pending certificates count: ${e.toString()}',
+      );
+    }
+  }
+
   /// Updates the status of an issued certificate
   ///
   /// [certificateId] The unique identifier of the certificate

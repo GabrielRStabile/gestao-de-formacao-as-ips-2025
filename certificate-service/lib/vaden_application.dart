@@ -28,6 +28,8 @@ import 'package:certificate_service/src/services/enrollment_event_processor.dart
 import 'package:certificate_service/src/services/certificate_issuance_service.dart';
 import 'package:certificate_service/src/repositories/issued_certificate_repository.dart';
 import 'package:certificate_service/src/controllers/enrollment_event_listener.dart';
+import 'package:certificate_service/src/dtos/issued_certificate_dtos.dart';
+import 'package:certificate_service/src/services/issued_certificate_service.dart';
 
 class VadenApplicationImpl implements VadenApplication {
   final _router = Router();
@@ -695,6 +697,292 @@ class VadenApplicationImpl implements VadenApplication {
         handlerCertificateControllerdeleteTemplate,
       ),
     );
+    paths['/certificates/issued-certificates/pending-approval'] =
+        <String, dynamic>{
+          ...paths['/certificates/issued-certificates/pending-approval'] ??
+              <String, dynamic>{},
+          'get': {
+            'tags': ['Certificate Management'],
+            'summary': '',
+            'description': '',
+            'responses': <String, dynamic>{},
+            'parameters': <Map<String, dynamic>>[],
+            'security': <Map<String, dynamic>>[],
+          },
+        };
+
+    paths['/certificates/issued-certificates/pending-approval']['get']['security'] =
+        [
+          {'bearer': []},
+        ];
+    paths['/certificates/issued-certificates/pending-approval']['get']['summary'] =
+        'List pending approval certificates';
+    paths['/certificates/issued-certificates/pending-approval']['get']['description'] =
+        'Lists certificates that are pending approval for emission. Requires Formador role.';
+    paths['/certificates/issued-certificates/pending-approval']['get']['responses']['200'] =
+        {
+          'description': 'Pending certificates retrieved successfully',
+          'content': <String, dynamic>{},
+        };
+
+    paths['/certificates/issued-certificates/pending-approval']['get']['responses']['200']['content']['application/json'] =
+        <String, dynamic>{};
+
+    paths['/certificates/issued-certificates/pending-approval']['get']['responses']['200']['content']['application/json']['schema'] =
+        {'\$ref': '#/components/schemas/ListPendingCertificatesResponseDto'};
+
+    paths['/certificates/issued-certificates/pending-approval']['get']['responses']['400'] =
+        {
+          'description': 'Invalid input parameters',
+          'content': <String, dynamic>{},
+        };
+
+    paths['/certificates/issued-certificates/pending-approval']['get']['responses']['400']['content']['application/json'] =
+        <String, dynamic>{};
+
+    paths['/certificates/issued-certificates/pending-approval']['get']['responses']['400']['content']['application/json']['schema'] =
+        {'\$ref': '#/components/schemas/ErrorDto'};
+
+    paths['/certificates/issued-certificates/pending-approval']['get']['responses']['401'] =
+        {
+          'description': 'Token JWT ausente ou inválido',
+          'content': <String, dynamic>{},
+        };
+
+    paths['/certificates/issued-certificates/pending-approval']['get']['responses']['401']['content']['application/json'] =
+        <String, dynamic>{};
+
+    paths['/certificates/issued-certificates/pending-approval']['get']['responses']['401']['content']['application/json']['schema'] =
+        {'\$ref': '#/components/schemas/ErrorDto'};
+
+    paths['/certificates/issued-certificates/pending-approval']['get']['responses']['403'] =
+        {
+          'description': 'Usuário não é formador',
+          'content': <String, dynamic>{},
+        };
+
+    paths['/certificates/issued-certificates/pending-approval']['get']['responses']['403']['content']['application/json'] =
+        <String, dynamic>{};
+
+    paths['/certificates/issued-certificates/pending-approval']['get']['responses']['403']['content']['application/json']['schema'] =
+        {'\$ref': '#/components/schemas/ErrorDto'};
+
+    paths['/certificates/issued-certificates/pending-approval']['get']['responses']['500'] =
+        {
+          'description': 'Ocorreu um erro interno ao processar sua solicitação',
+          'content': <String, dynamic>{},
+        };
+
+    paths['/certificates/issued-certificates/pending-approval']['get']['responses']['500']['content']['application/json'] =
+        <String, dynamic>{};
+
+    paths['/certificates/issued-certificates/pending-approval']['get']['responses']['500']['content']['application/json']['schema'] =
+        {'\$ref': '#/components/schemas/ErrorDto'};
+
+    var pipelineCertificateControllerlistPendingCertificates = const Pipeline();
+    pipelineCertificateControllerlistPendingCertificates =
+        pipelineCertificateControllerlistPendingCertificates.addMiddleware((
+          Handler inner,
+        ) {
+          return (Request request) async {
+            final guard = _injector.get<TokenDecodeMiddleware>();
+            return await guard.handler(request, inner);
+          };
+        });
+    paths['/certificates/issued-certificates/pending-approval']['get']['parameters']
+        ?.add({
+          'name': 'courseId',
+          'in': 'query',
+          'required': false,
+          'schema': {'type': 'string'},
+        });
+
+    paths['/certificates/issued-certificates/pending-approval']['get']['parameters']
+        ?.add({
+          'name': 'page',
+          'in': 'query',
+          'required': false,
+          'schema': {'type': 'string'},
+        });
+
+    paths['/certificates/issued-certificates/pending-approval']['get']['parameters']
+        ?.add({
+          'name': 'limit',
+          'in': 'query',
+          'required': false,
+          'schema': {'type': 'string'},
+        });
+
+    final handlerCertificateControllerlistPendingCertificates =
+        (Request request) async {
+          final courseId = _parse<String?>(
+            request.url.queryParameters['courseId'],
+          );
+          final page = _parse<int?>(request.url.queryParameters['page']);
+          final limit = _parse<int?>(request.url.queryParameters['limit']);
+          final ctrl = _injector.get<CertificateController>();
+          final result = await ctrl.listPendingCertificates(
+            courseId,
+            page,
+            limit,
+            request,
+          );
+          final jsoResponse = _injector
+              .get<DSON>()
+              .toJson<ListPendingCertificatesResponseDto>(result);
+          return Response.ok(
+            jsonEncode(jsoResponse),
+            headers: {'Content-Type': 'application/json'},
+          );
+        };
+    routerCertificateController.get(
+      '/issued-certificates/pending-approval',
+      pipelineCertificateControllerlistPendingCertificates.addHandler(
+        handlerCertificateControllerlistPendingCertificates,
+      ),
+    );
+    paths['/certificates/issued-certificates/{certificateId}/approve'] =
+        <String, dynamic>{
+          ...paths['/certificates/issued-certificates/{certificateId}/approve'] ??
+              <String, dynamic>{},
+          'post': {
+            'tags': ['Certificate Management'],
+            'summary': '',
+            'description': '',
+            'responses': <String, dynamic>{},
+            'parameters': <Map<String, dynamic>>[],
+            'security': <Map<String, dynamic>>[],
+          },
+        };
+
+    paths['/certificates/issued-certificates/{certificateId}/approve']['post']['security'] =
+        [
+          {'bearer': []},
+        ];
+    paths['/certificates/issued-certificates/{certificateId}/approve']['post']['summary'] =
+        'Approve certificate for emission';
+    paths['/certificates/issued-certificates/{certificateId}/approve']['post']['description'] =
+        'Approves a pending certificate for emission. Requires Formador role.';
+    paths['/certificates/issued-certificates/{certificateId}/approve']['post']['responses']['200'] =
+        {
+          'description': 'Certificate approved successfully',
+          'content': <String, dynamic>{},
+        };
+
+    paths['/certificates/issued-certificates/{certificateId}/approve']['post']['responses']['200']['content']['application/json'] =
+        <String, dynamic>{};
+
+    paths['/certificates/issued-certificates/{certificateId}/approve']['post']['responses']['200']['content']['application/json']['schema'] =
+        {'\$ref': '#/components/schemas/CertificateApprovalResponseDto'};
+
+    paths['/certificates/issued-certificates/{certificateId}/approve']['post']['responses']['400'] =
+        {
+          'description': 'Invalid certificate status or parameters',
+          'content': <String, dynamic>{},
+        };
+
+    paths['/certificates/issued-certificates/{certificateId}/approve']['post']['responses']['400']['content']['application/json'] =
+        <String, dynamic>{};
+
+    paths['/certificates/issued-certificates/{certificateId}/approve']['post']['responses']['400']['content']['application/json']['schema'] =
+        {'\$ref': '#/components/schemas/ErrorDto'};
+
+    paths['/certificates/issued-certificates/{certificateId}/approve']['post']['responses']['401'] =
+        {
+          'description': 'Token JWT ausente ou inválido',
+          'content': <String, dynamic>{},
+        };
+
+    paths['/certificates/issued-certificates/{certificateId}/approve']['post']['responses']['401']['content']['application/json'] =
+        <String, dynamic>{};
+
+    paths['/certificates/issued-certificates/{certificateId}/approve']['post']['responses']['401']['content']['application/json']['schema'] =
+        {'\$ref': '#/components/schemas/ErrorDto'};
+
+    paths['/certificates/issued-certificates/{certificateId}/approve']['post']['responses']['403'] =
+        {
+          'description': 'Usuário não é formador',
+          'content': <String, dynamic>{},
+        };
+
+    paths['/certificates/issued-certificates/{certificateId}/approve']['post']['responses']['403']['content']['application/json'] =
+        <String, dynamic>{};
+
+    paths['/certificates/issued-certificates/{certificateId}/approve']['post']['responses']['403']['content']['application/json']['schema'] =
+        {'\$ref': '#/components/schemas/ErrorDto'};
+
+    paths['/certificates/issued-certificates/{certificateId}/approve']['post']['responses']['404'] =
+        {
+          'description': 'Certificado não encontrado',
+          'content': <String, dynamic>{},
+        };
+
+    paths['/certificates/issued-certificates/{certificateId}/approve']['post']['responses']['404']['content']['application/json'] =
+        <String, dynamic>{};
+
+    paths['/certificates/issued-certificates/{certificateId}/approve']['post']['responses']['404']['content']['application/json']['schema'] =
+        {'\$ref': '#/components/schemas/ErrorDto'};
+
+    paths['/certificates/issued-certificates/{certificateId}/approve']['post']['responses']['500'] =
+        {
+          'description': 'Ocorreu um erro interno ao processar sua solicitação',
+          'content': <String, dynamic>{},
+        };
+
+    paths['/certificates/issued-certificates/{certificateId}/approve']['post']['responses']['500']['content']['application/json'] =
+        <String, dynamic>{};
+
+    paths['/certificates/issued-certificates/{certificateId}/approve']['post']['responses']['500']['content']['application/json']['schema'] =
+        {'\$ref': '#/components/schemas/ErrorDto'};
+
+    var pipelineCertificateControllerapproveCertificate = const Pipeline();
+    pipelineCertificateControllerapproveCertificate =
+        pipelineCertificateControllerapproveCertificate.addMiddleware((
+          Handler inner,
+        ) {
+          return (Request request) async {
+            final guard = _injector.get<TokenDecodeMiddleware>();
+            return await guard.handler(request, inner);
+          };
+        });
+    paths['/certificates/issued-certificates/{certificateId}/approve']['post']['parameters']
+        ?.add({
+          'name': 'certificateId',
+          'in': 'path',
+          'required': true,
+          'schema': {'type': 'string'},
+        });
+
+    final handlerCertificateControllerapproveCertificate =
+        (Request request) async {
+          if (request.params['certificateId'] == null) {
+            return Response(
+              400,
+              body: jsonEncode({
+                'error': 'Path Param is required (certificateId)',
+              }),
+            );
+          }
+          final certificateId = _parse<String>(
+            request.params['certificateId'],
+          )!;
+
+          final ctrl = _injector.get<CertificateController>();
+          final result = await ctrl.approveCertificate(certificateId, request);
+          final jsoResponse = _injector
+              .get<DSON>()
+              .toJson<CertificateApprovalResponseDto>(result);
+          return Response.ok(
+            jsonEncode(jsoResponse),
+            headers: {'Content-Type': 'application/json'},
+          );
+        };
+    routerCertificateController.post(
+      '/issued-certificates/{certificateId}/approve',
+      pipelineCertificateControllerapproveCertificate.addHandler(
+        handlerCertificateControllerapproveCertificate,
+      ),
+    );
     _router.mount('/certificates', routerCertificateController.call);
 
     _injector.addLazySingleton(AmqpProvider.new);
@@ -706,6 +994,8 @@ class VadenApplicationImpl implements VadenApplication {
     _injector.addLazySingleton(IssuedCertificateRepository.new);
 
     _injector.addLazySingleton(EnrollmentEventListener.new);
+
+    _injector.addLazySingleton(IssuedCertificateService.new);
 
     _injector.addLazySingleton(OpenApiConfig.create(paths, apis).call);
     _injector.commit();
@@ -999,6 +1289,226 @@ class _DSON extends DSON {
         "timestamp": {"type": "string"},
       },
       "required": ["traineeUserId", "enrollmentId", "courseId", "timestamp"],
+    };
+
+    fromJsonMap[ListPendingCertificatesRequestDto] =
+        (Map<String, dynamic> json) {
+          return Function.apply(ListPendingCertificatesRequestDto.new, [], {
+            #courseId: json['courseId'],
+            #page: json['page'],
+            #limit: json['limit'],
+            #userId: json['userId'],
+            #email: json['email'],
+            #role: json['role'],
+          });
+        };
+    toJsonMap[ListPendingCertificatesRequestDto] = (object) {
+      final obj = object as ListPendingCertificatesRequestDto;
+      return {
+        'courseId': obj.courseId,
+        'page': obj.page,
+        'limit': obj.limit,
+        'userId': obj.userId,
+        'email': obj.email,
+        'role': obj.role,
+      };
+    };
+    toOpenApiMap[ListPendingCertificatesRequestDto] = {
+      "type": "object",
+      "properties": <String, dynamic>{
+        "courseId": {"type": "string"},
+        "page": {"type": "integer"},
+        "limit": {"type": "integer"},
+        "userId": {"type": "string"},
+        "email": {"type": "string"},
+        "role": {"type": "string"},
+      },
+      "required": ["page", "limit"],
+    };
+
+    fromJsonMap[IssuedCertificateDto] = (Map<String, dynamic> json) {
+      return Function.apply(IssuedCertificateDto.new, [], {
+        #certificateId: json['certificateId'],
+        #traineeUserId: json['traineeUserId'],
+        #enrollmentId: json['enrollmentId'],
+        #courseId: json['courseId'],
+        #status: json['status'],
+        #emissionApprovedByUserId: json['emissionApprovedByUserId'],
+        #certificateBlobUrl: json['certificateBlobUrl'],
+        #verificationCode: json['verificationCode'],
+        #createdAt: fromJson<DateTime>(json['createdAt']),
+        #emissionApprovedAt: json['emissionApprovedAt'] == null
+            ? null
+            : fromJson<DateTime?>(json['emissionApprovedAt']),
+        #issuedAt: json['issuedAt'] == null
+            ? null
+            : fromJson<DateTime?>(json['issuedAt']),
+        #updatedAt: fromJson<DateTime>(json['updatedAt']),
+      });
+    };
+    toJsonMap[IssuedCertificateDto] = (object) {
+      final obj = object as IssuedCertificateDto;
+      return {
+        'certificateId': obj.certificateId,
+        'traineeUserId': obj.traineeUserId,
+        'enrollmentId': obj.enrollmentId,
+        'courseId': obj.courseId,
+        'status': obj.status,
+        'emissionApprovedByUserId': obj.emissionApprovedByUserId,
+        'certificateBlobUrl': obj.certificateBlobUrl,
+        'verificationCode': obj.verificationCode,
+        'createdAt': toJson<DateTime>(obj.createdAt),
+        'emissionApprovedAt': obj.emissionApprovedAt == null
+            ? null
+            : toJson<DateTime?>(obj.emissionApprovedAt!),
+        'issuedAt': obj.issuedAt == null
+            ? null
+            : toJson<DateTime?>(obj.issuedAt!),
+        'updatedAt': toJson<DateTime>(obj.updatedAt),
+      };
+    };
+    toOpenApiMap[IssuedCertificateDto] = {
+      "type": "object",
+      "properties": <String, dynamic>{
+        "certificateId": {"type": "string"},
+        "traineeUserId": {"type": "string"},
+        "enrollmentId": {"type": "string"},
+        "courseId": {"type": "string"},
+        "status": {"type": "string"},
+        "emissionApprovedByUserId": {"type": "string"},
+        "certificateBlobUrl": {"type": "string"},
+        "verificationCode": {"type": "string"},
+        "createdAt": {r"$ref": "#/components/schemas/DateTime"},
+        "emissionApprovedAt": {r"$ref": "#/components/schemas/DateTime?"},
+        "issuedAt": {r"$ref": "#/components/schemas/DateTime?"},
+        "updatedAt": {r"$ref": "#/components/schemas/DateTime"},
+      },
+      "required": [
+        "certificateId",
+        "traineeUserId",
+        "enrollmentId",
+        "courseId",
+        "status",
+        "createdAt",
+        "updatedAt",
+      ],
+    };
+
+    fromJsonMap[ListPendingCertificatesResponseDto] =
+        (Map<String, dynamic> json) {
+          return Function.apply(ListPendingCertificatesResponseDto.new, [], {
+            #certificates: fromJsonList<IssuedCertificateDto>(
+              json['certificates'],
+            ),
+            #pagination: fromJson<CertificatePaginationDto>(json['pagination']),
+          });
+        };
+    toJsonMap[ListPendingCertificatesResponseDto] = (object) {
+      final obj = object as ListPendingCertificatesResponseDto;
+      return {
+        'certificates': toJsonList<IssuedCertificateDto>(obj.certificates),
+        'pagination': toJson<CertificatePaginationDto>(obj.pagination),
+      };
+    };
+    toOpenApiMap[ListPendingCertificatesResponseDto] = {
+      "type": "object",
+      "properties": <String, dynamic>{
+        "certificates": {
+          "type": "array",
+          "items": {r"$ref": "#/components/schemas/IssuedCertificateDto"},
+        },
+        "pagination": {
+          r"$ref": "#/components/schemas/CertificatePaginationDto",
+        },
+      },
+      "required": ["certificates", "pagination"],
+    };
+
+    fromJsonMap[CertificatePaginationDto] = (Map<String, dynamic> json) {
+      return Function.apply(CertificatePaginationDto.new, [], {
+        #currentPage: json['currentPage'],
+        #itemsPerPage: json['itemsPerPage'],
+        #totalItems: json['totalItems'],
+        #totalPages: json['totalPages'],
+        #hasNextPage: json['hasNextPage'],
+        #hasPreviousPage: json['hasPreviousPage'],
+      });
+    };
+    toJsonMap[CertificatePaginationDto] = (object) {
+      final obj = object as CertificatePaginationDto;
+      return {
+        'currentPage': obj.currentPage,
+        'itemsPerPage': obj.itemsPerPage,
+        'totalItems': obj.totalItems,
+        'totalPages': obj.totalPages,
+        'hasNextPage': obj.hasNextPage,
+        'hasPreviousPage': obj.hasPreviousPage,
+      };
+    };
+    toOpenApiMap[CertificatePaginationDto] = {
+      "type": "object",
+      "properties": <String, dynamic>{
+        "currentPage": {"type": "integer"},
+        "itemsPerPage": {"type": "integer"},
+        "totalItems": {"type": "integer"},
+        "totalPages": {"type": "integer"},
+        "hasNextPage": {"type": "boolean"},
+        "hasPreviousPage": {"type": "boolean"},
+      },
+      "required": [
+        "currentPage",
+        "itemsPerPage",
+        "totalItems",
+        "totalPages",
+        "hasNextPage",
+        "hasPreviousPage",
+      ],
+    };
+
+    fromJsonMap[ApproveCertificateRequestDto] = (Map<String, dynamic> json) {
+      return Function.apply(ApproveCertificateRequestDto.new, [], {
+        #userId: json['userId'],
+        #email: json['email'],
+        #role: json['role'],
+      });
+    };
+    toJsonMap[ApproveCertificateRequestDto] = (object) {
+      final obj = object as ApproveCertificateRequestDto;
+      return {'userId': obj.userId, 'email': obj.email, 'role': obj.role};
+    };
+    toOpenApiMap[ApproveCertificateRequestDto] = {
+      "type": "object",
+      "properties": <String, dynamic>{
+        "userId": {"type": "string"},
+        "email": {"type": "string"},
+        "role": {"type": "string"},
+      },
+      "required": [],
+    };
+
+    fromJsonMap[CertificateApprovalResponseDto] = (Map<String, dynamic> json) {
+      return Function.apply(CertificateApprovalResponseDto.new, [], {
+        #certificateId: json['certificateId'],
+        #status: json['status'],
+        #message: json['message'],
+      });
+    };
+    toJsonMap[CertificateApprovalResponseDto] = (object) {
+      final obj = object as CertificateApprovalResponseDto;
+      return {
+        'certificateId': obj.certificateId,
+        'status': obj.status,
+        'message': obj.message,
+      };
+    };
+    toOpenApiMap[CertificateApprovalResponseDto] = {
+      "type": "object",
+      "properties": <String, dynamic>{
+        "certificateId": {"type": "string"},
+        "status": {"type": "string"},
+        "message": {"type": "string"},
+      },
+      "required": ["certificateId", "status", "message"],
     };
 
     return (fromJsonMap, toJsonMap, toOpenApiMap);

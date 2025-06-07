@@ -407,4 +407,89 @@ class EnrollmentController {
 
     return response;
   }
+
+  /// Approves an enrollment request by the manager
+  ///
+  /// PUT /enrollments/{enrollmentId}/approve
+  @ApiOperation(
+    summary: 'Approve enrollment request',
+    description:
+        'Approves an enrollment request. Only managers can approve enrollment requests that are in pending status.',
+  )
+  @ApiResponse(
+    200,
+    description: 'Enrollment request approved successfully',
+    content: ApiContent(
+      type: 'application/json',
+      schema: EnrollmentRequestResponseDto,
+    ),
+  )
+  @ApiResponse(
+    400,
+    description: 'A inscrição não está pendente ou já foi processada',
+    content: ApiContent(type: 'application/json', schema: ErrorDto),
+  )
+  @ApiResponse(
+    401,
+    description: 'Token JWT ausente ou inválido',
+    content: ApiContent(type: 'application/json', schema: ErrorDto),
+  )
+  @ApiResponse(
+    403,
+    description: 'Usuário não é gestor',
+    content: ApiContent(type: 'application/json', schema: ErrorDto),
+  )
+  @ApiResponse(
+    404,
+    description: 'Inscrição não encontrada',
+    content: ApiContent(type: 'application/json', schema: ErrorDto),
+  )
+  @ApiResponse(
+    500,
+    description: 'Ocorreu um erro interno ao processar sua solicitação',
+    content: ApiContent(type: 'application/json', schema: ErrorDto),
+  )
+  @ApiSecurity(['bearer'])
+  @UseMiddleware([TokenDecodeMiddleware])
+  @Put('/{enrollmentId}/approve')
+  Future<EnrollmentRequestResponseDto> approveEnrollment(
+    @Body() EnrollmentApproveDto approveDto,
+    Request request,
+  ) async {
+    // Extract enrollmentId from path parameters
+    final enrollmentId = request.params['enrollmentId'];
+
+    if (enrollmentId == null) {
+      throw ValidationError(['Path parameter enrollmentId is required']);
+    }
+
+    // Get user context from middleware
+    final userId = request.context['userId'] as String?;
+    final role = request.context['role'] as String?;
+
+    // Validate role - only managers can approve enrollments
+    if (role != 'manager') {
+      throw ValidationError(['Only managers can approve enrollment requests']);
+    }
+
+    // Validate the request DTO
+    final validationResult = approveDto
+        .validate(ValidatorBuilder<EnrollmentApproveDto>())
+        .validate(approveDto);
+
+    if (!validationResult.isValid) {
+      throw ValidationError(
+        validationResult.exceptions.map((e) => e.message).toList(),
+      );
+    }
+
+    // Approve the enrollment
+    final response = await _enrollmentService.approveEnrollmentByManager(
+      enrollmentId: enrollmentId,
+      managerUserId: userId!,
+      notes: approveDto.notes,
+    );
+
+    return response;
+  }
 }

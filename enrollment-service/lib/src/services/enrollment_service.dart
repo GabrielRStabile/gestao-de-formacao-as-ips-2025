@@ -438,4 +438,53 @@ class EnrollmentService {
       throw Exception('Failed to get enrollment details: ${e.toString()}');
     }
   }
+
+  /// Approves an enrollment request by a manager
+  ///
+  /// [enrollmentId] The enrollment request ID
+  /// [managerUserId] The manager user ID making the approval
+  /// [notes] Optional notes for the approval
+  ///
+  /// Returns the updated enrollment request
+  /// Throws [Exception] if enrollment not found, not pending, or update fails
+  Future<EnrollmentRequestResponseDto> approveEnrollmentByManager({
+    required String enrollmentId,
+    required String managerUserId,
+    String? notes,
+  }) async {
+    // Validate inputs
+    if (enrollmentId.trim().isEmpty) {
+      throw Exception('Enrollment ID cannot be empty');
+    }
+    if (managerUserId.trim().isEmpty) {
+      throw Exception('Manager user ID cannot be empty');
+    }
+
+    try {
+      // Get the current enrollment to validate status
+      final currentEnrollment = await _enrollmentRequestRepository
+          .getEnrollmentRequestById(enrollmentId);
+
+      if (currentEnrollment == null) {
+        throw Exception('Enrollment request not found');
+      }
+
+      // Check if enrollment is in a state that can be approved
+      if (currentEnrollment.status != EnrollmentStatus.pendingApproval) {
+        throw Exception(
+          'Enrollment is not pending approval or has already been processed',
+        );
+      }
+
+      // Update the enrollment status to approved
+      return await updateEnrollmentStatus(
+        enrollmentId: enrollmentId,
+        newStatus: EnrollmentStatus.approved,
+        changedByUserId: managerUserId,
+        reason: notes ?? 'Aprovado pelo gestor',
+      );
+    } catch (e) {
+      throw Exception('Failed to approve enrollment: ${e.toString()}');
+    }
+  }
 }

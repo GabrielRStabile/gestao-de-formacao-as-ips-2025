@@ -18,19 +18,6 @@ class EnrollmentRequestCreateDto with Validator<EnrollmentRequestCreateDto> {
     this.notes,
   });
 
-  /// Creates an instance from JSON data
-  factory EnrollmentRequestCreateDto.fromJson(Map<String, dynamic> json) {
-    return EnrollmentRequestCreateDto(
-      courseOfferingId: json['courseOfferingId'] as String,
-      notes: json['notes'] as String?,
-    );
-  }
-
-  /// Converts the instance to JSON
-  Map<String, dynamic> toJson() {
-    return {'courseOfferingId': courseOfferingId, 'notes': notes};
-  }
-
   /// Validates the DTO using the Vaden validation framework
   @override
   LucidValidator<EnrollmentRequestCreateDto> validate(
@@ -114,22 +101,6 @@ class EnrollmentRequestResponseDto {
       notes: enrollmentRequest.notes,
     );
   }
-
-  /// Converts the instance to JSON
-  Map<String, dynamic> toJson() {
-    return {
-      'enrollmentId': enrollmentId,
-      'traineeUserId': traineeUserId,
-      'courseOfferingId': courseOfferingId,
-      'status': status,
-      'requestDate': requestDate.toIso8601String(),
-      'decisionDate': decisionDate?.toIso8601String(),
-      'managerUserId': managerUserId,
-      'rejectionReason': rejectionReason,
-      'updatedAt': updatedAt.toIso8601String(),
-      'notes': notes,
-    };
-  }
 }
 
 /// Data Transfer Object for enrollment status enumeration
@@ -170,16 +141,6 @@ class EnrollmentCancelDto with Validator<EnrollmentCancelDto> {
   final String? reason;
 
   const EnrollmentCancelDto({this.reason});
-
-  /// Creates an instance from JSON data
-  factory EnrollmentCancelDto.fromJson(Map<String, dynamic> json) {
-    return EnrollmentCancelDto(reason: json['reason'] as String?);
-  }
-
-  /// Converts the instance to JSON
-  Map<String, dynamic> toJson() {
-    return {'reason': reason};
-  }
 
   /// Validates the DTO using the Vaden validation framework
   @override
@@ -313,18 +274,6 @@ class PaginationDto {
       hasPrevious: page > 1,
     );
   }
-
-  /// Converts the instance to JSON
-  Map<String, dynamic> toJson() {
-    return {
-      'currentPage': currentPage,
-      'pageSize': pageSize,
-      'totalItems': totalItems,
-      'totalPages': totalPages,
-      'hasNext': hasNext,
-      'hasPrevious': hasPrevious,
-    };
-  }
 }
 
 /// Response DTO for paginated enrollment requests
@@ -340,14 +289,6 @@ class PaginatedEnrollmentsDto {
   final List<EnrollmentRequestResponseDto> data;
 
   const PaginatedEnrollmentsDto({required this.pagination, required this.data});
-
-  /// Converts the instance to JSON
-  Map<String, dynamic> toJson() {
-    return {
-      'pagination': pagination.toJson(),
-      'data': data.map((enrollment) => enrollment.toJson()).toList(),
-    };
-  }
 }
 
 /// Data Transfer Object for manager enrollment queries
@@ -408,21 +349,6 @@ class ManagerEnrollmentsQueryDto with Validator<ManagerEnrollmentsQueryDto> {
       startDate: query['startDate'],
       endDate: query['endDate'],
     );
-  }
-
-  /// Converts the instance to JSON
-  Map<String, dynamic> toJson() {
-    return {
-      'page': page,
-      'pageSize': pageSize,
-      'status': status,
-      'traineeId': traineeId,
-      'courseOfferingId': courseOfferingId,
-      'sortBy': sortBy,
-      'sortOrder': sortOrder,
-      'startDate': startDate,
-      'endDate': endDate,
-    };
   }
 
   /// Validates the query parameters using the Vaden validation framework
@@ -523,18 +449,6 @@ class EnrollmentStatusHistoryDto {
       reason: statusHistory.reason,
     );
   }
-
-  /// Converts the instance to JSON
-  Map<String, dynamic> toJson() {
-    return {
-      'historyId': historyId,
-      'oldStatus': oldStatus,
-      'newStatus': newStatus,
-      'changedAt': changedAt.toIso8601String(),
-      'changedByUserId': changedByUserId,
-      'reason': reason,
-    };
-  }
 }
 
 /// Data Transfer Object for enrollment details with status history
@@ -566,13 +480,28 @@ class EnrollmentDetailsResponseDto {
               .toList(),
     );
   }
+}
 
-  /// Converts the instance to JSON
-  Map<String, dynamic> toJson() {
-    return {
-      'enrollment': enrollment.toJson(),
-      'statusHistory':
-          statusHistory.map((history) => history.toJson()).toList(),
-    };
+/// Data Transfer Object for enrollment approval requests
+///
+/// Used for receiving approval requests from managers.
+/// Contains optional notes for the approval.
+@DTO()
+class EnrollmentApproveDto with Validator<EnrollmentApproveDto> {
+  /// Optional notes for the approval
+  final String? notes;
+
+  const EnrollmentApproveDto({this.notes});
+
+  /// Validates the DTO using the Vaden validation framework
+  @override
+  LucidValidator<EnrollmentApproveDto> validate(
+    ValidatorBuilder<EnrollmentApproveDto> builder,
+  ) {
+    return builder
+      ..ruleFor(
+        (r) => r.notes,
+        key: 'notes',
+      ).maxLength(500).when((r) => r.notes != null);
   }
 }

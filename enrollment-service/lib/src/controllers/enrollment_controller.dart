@@ -408,17 +408,17 @@ class EnrollmentController {
     return response;
   }
 
-  /// Approves an enrollment request by the manager
+  /// Approves an enrollment request
   ///
   /// PUT /enrollments/{enrollmentId}/approve
   @ApiOperation(
     summary: 'Approve enrollment request',
     description:
-        'Approves an enrollment request. Only managers can approve enrollment requests that are in pending status.',
+        'Approves an enrollment request. Only managers can perform this action. The enrollment must be in pending approval status.',
   )
   @ApiResponse(
     200,
-    description: 'Enrollment request approved successfully',
+    description: 'Enrollment approved successfully',
     content: ApiContent(
       type: 'application/json',
       schema: EnrollmentRequestResponseDto,
@@ -426,7 +426,7 @@ class EnrollmentController {
   )
   @ApiResponse(
     400,
-    description: 'A inscrição não está pendente ou já foi processada',
+    description: 'Invalid request data or enrollment cannot be approved',
     content: ApiContent(type: 'application/json', schema: ErrorDto),
   )
   @ApiResponse(
@@ -436,12 +436,12 @@ class EnrollmentController {
   )
   @ApiResponse(
     403,
-    description: 'Usuário não é gestor',
+    description: 'Usuário não é manager',
     content: ApiContent(type: 'application/json', schema: ErrorDto),
   )
   @ApiResponse(
     404,
-    description: 'Inscrição não encontrada',
+    description: 'Enrollment request não encontrado',
     content: ApiContent(type: 'application/json', schema: ErrorDto),
   )
   @ApiResponse(
@@ -488,6 +488,91 @@ class EnrollmentController {
       enrollmentId: enrollmentId,
       managerUserId: userId!,
       notes: approveDto.notes,
+    );
+
+    return response;
+  }
+
+  /// Rejects an enrollment request
+  ///
+  /// PUT /enrollments/{enrollmentId}/reject
+  @ApiOperation(
+    summary: 'Reject enrollment request',
+    description:
+        'Rejects an enrollment request with a required reason. Only managers can perform this action. The enrollment must be in pending approval status.',
+  )
+  @ApiResponse(
+    200,
+    description: 'Enrollment rejected successfully',
+    content: ApiContent(
+      type: 'application/json',
+      schema: EnrollmentRequestResponseDto,
+    ),
+  )
+  @ApiResponse(
+    400,
+    description: 'Invalid request data or enrollment cannot be rejected',
+    content: ApiContent(type: 'application/json', schema: ErrorDto),
+  )
+  @ApiResponse(
+    401,
+    description: 'Token JWT ausente ou inválido',
+    content: ApiContent(type: 'application/json', schema: ErrorDto),
+  )
+  @ApiResponse(
+    403,
+    description: 'Usuário não é manager',
+    content: ApiContent(type: 'application/json', schema: ErrorDto),
+  )
+  @ApiResponse(
+    404,
+    description: 'Enrollment request não encontrado',
+    content: ApiContent(type: 'application/json', schema: ErrorDto),
+  )
+  @ApiResponse(
+    500,
+    description: 'Ocorreu um erro interno ao processar sua solicitação',
+    content: ApiContent(type: 'application/json', schema: ErrorDto),
+  )
+  @ApiSecurity(['bearer'])
+  @UseMiddleware([TokenDecodeMiddleware])
+  @Put('/{enrollmentId}/reject')
+  Future<EnrollmentRequestResponseDto> rejectEnrollment(
+    @Body() EnrollmentRejectDto rejectDto,
+    Request request,
+  ) async {
+    // Extract enrollmentId from path parameters
+    final enrollmentId = request.params['enrollmentId'];
+
+    if (enrollmentId == null) {
+      throw ValidationError(['Path parameter enrollmentId is required']);
+    }
+
+    // Get user context from middleware
+    final userId = request.context['userId'] as String?;
+    final role = request.context['role'] as String?;
+
+    // Validate role - only managers can reject enrollments
+    if (role != 'manager') {
+      throw ValidationError(['Only managers can reject enrollment requests']);
+    }
+
+    // Validate the request DTO
+    final validationResult = rejectDto
+        .validate(ValidatorBuilder<EnrollmentRejectDto>())
+        .validate(rejectDto);
+
+    if (!validationResult.isValid) {
+      throw ValidationError(
+        validationResult.exceptions.map((e) => e.message).toList(),
+      );
+    }
+
+    // Reject the enrollment
+    final response = await _enrollmentService.rejectEnrollmentByManager(
+      enrollmentId: enrollmentId,
+      managerUserId: userId!,
+      reason: rejectDto.reason,
     );
 
     return response;

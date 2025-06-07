@@ -505,3 +505,27 @@ class EnrollmentApproveDto with Validator<EnrollmentApproveDto> {
       ).maxLength(500).when((r) => r.notes != null);
   }
 }
+
+/// Data Transfer Object for enrollment rejection requests
+///
+/// Used for receiving rejection requests from managers.
+/// Requires a reason for the rejection to provide transparency to trainees.
+@DTO()
+class EnrollmentRejectDto with Validator<EnrollmentRejectDto> {
+  /// Required reason for the rejection
+  final String reason;
+
+  const EnrollmentRejectDto({required this.reason});
+
+  /// Validates the DTO using the Vaden validation framework
+  @override
+  LucidValidator<EnrollmentRejectDto> validate(
+    ValidatorBuilder<EnrollmentRejectDto> builder,
+  ) {
+    return builder
+      ..ruleFor(
+        (r) => r.reason,
+        key: 'reason',
+      ).notEmptyOrNull().minLength(1).maxLength(500);
+  }
+}

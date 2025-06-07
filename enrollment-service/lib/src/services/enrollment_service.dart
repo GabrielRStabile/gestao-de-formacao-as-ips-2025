@@ -446,7 +446,6 @@ class EnrollmentService {
   /// [notes] Optional notes for the approval
   ///
   /// Returns the updated enrollment request
-  /// Throws [Exception] if enrollment not found, not pending, or update fails
   Future<EnrollmentRequestResponseDto> approveEnrollmentByManager({
     required String enrollmentId,
     required String managerUserId,
@@ -456,6 +455,7 @@ class EnrollmentService {
     if (enrollmentId.trim().isEmpty) {
       throw Exception('Enrollment ID cannot be empty');
     }
+
     if (managerUserId.trim().isEmpty) {
       throw Exception('Manager user ID cannot be empty');
     }
@@ -485,6 +485,60 @@ class EnrollmentService {
       );
     } catch (e) {
       throw Exception('Failed to approve enrollment: ${e.toString()}');
+    }
+  }
+
+  /// Rejects an enrollment request by a manager
+  ///
+  /// [enrollmentId] The enrollment request ID
+  /// [managerUserId] The manager user ID making the rejection
+  /// [reason] Required reason for the rejection
+  ///
+  /// Returns the updated enrollment request
+  Future<EnrollmentRequestResponseDto> rejectEnrollmentByManager({
+    required String enrollmentId,
+    required String managerUserId,
+    required String reason,
+  }) async {
+    // Validate inputs
+    if (enrollmentId.trim().isEmpty) {
+      throw Exception('Enrollment ID cannot be empty');
+    }
+
+    if (managerUserId.trim().isEmpty) {
+      throw Exception('Manager user ID cannot be empty');
+    }
+
+    if (reason.trim().isEmpty) {
+      throw Exception('Rejection reason cannot be empty');
+    }
+
+    try {
+      // Get the current enrollment to validate status
+      final currentEnrollment = await _enrollmentRequestRepository
+          .getEnrollmentRequestById(enrollmentId);
+
+      if (currentEnrollment == null) {
+        throw Exception('Enrollment request not found');
+      }
+
+      // Check if enrollment is in a state that can be rejected
+      if (currentEnrollment.status != EnrollmentStatus.pendingApproval) {
+        throw Exception(
+          'Enrollment is not pending approval or has already been processed',
+        );
+      }
+
+      // Update the enrollment status to rejected
+      return await updateEnrollmentStatus(
+        enrollmentId: enrollmentId,
+        newStatus: EnrollmentStatus.rejected,
+        changedByUserId: managerUserId,
+        reason: reason,
+        rejectionReason: reason,
+      );
+    } catch (e) {
+      throw Exception('Failed to reject enrollment: ${e.toString()}');
     }
   }
 }

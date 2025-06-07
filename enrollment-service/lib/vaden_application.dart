@@ -18,6 +18,8 @@ import 'package:enrollment_service/src/utils/date_time_parse.dart';
 import 'package:enrollment_service/src/utils/verification_code_generator.dart';
 import 'package:enrollment_service/src/models/database.dart';
 import 'package:enrollment_service/src/dtos/error_dto.dart';
+import 'package:enrollment_service/src/repositories/enrollment_request_repository.dart';
+import 'package:enrollment_service/src/repositories/enrollment_status_history_repository.dart';
 
 class VadenApplicationImpl implements VadenApplication {
   final _router = Router();
@@ -117,6 +119,10 @@ class VadenApplicationImpl implements VadenApplication {
     _injector.addLazySingleton(VerificationCodeGenerator.new);
 
     _injector.addLazySingleton(EnrollmentDatabaseAccess.new);
+
+    _injector.addLazySingleton(EnrollmentRequestRepository.new);
+
+    _injector.addLazySingleton(EnrollmentStatusHistoryRepository.new);
 
     _injector.addLazySingleton(OpenApiConfig.create(paths, apis).call);
     _injector.commit();

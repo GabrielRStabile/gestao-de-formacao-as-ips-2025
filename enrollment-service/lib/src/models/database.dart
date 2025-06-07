@@ -4,13 +4,16 @@ import 'package:enrollment_service/config/app_configuration.dart';
 import 'package:postgres/postgres.dart';
 import 'package:vaden/vaden.dart' as vaden;
 
+import 'enrollment_request.dart';
+import 'enrollment_status_history.dart';
+
 part 'database.g.dart';
 
 /// Main database class for enrollment service
 ///
 /// Manages PostgreSQL connection and provides access to all tables.
 /// Includes migration strategy and connection configuration.
-@DriftDatabase(tables: [])
+@DriftDatabase(tables: [EnrollmentRequests, EnrollmentStatusHistories])
 class EnrollmentDatabase extends _$EnrollmentDatabase {
   /// Creates a new instance of EnrollmentDatabase
   ///

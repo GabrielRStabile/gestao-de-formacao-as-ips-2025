@@ -1,0 +1,6 @@
+# Static Analysis Configuration
+# Configures Dart analyzer settings and linting rules for code quality
+include: package:lints/recommended.yaml
+analyzer:
+  errors:
+    recursive_getters: ignore

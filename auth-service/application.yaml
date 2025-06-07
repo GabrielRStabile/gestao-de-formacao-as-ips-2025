@@ -1,0 +1,14 @@
+# Auth Service Application Configuration
+# Configuration settings for the authentication service
+
+# OpenAPI documentation settings
+openapi:
+  title: Auth Service API
+  version: 1.0.0
+  description: Comprehensive authentication service with REST endpoints for user management and security
+  enable: true
+
+# Server configuration
+server:
+  port: 8080
+  host: localhost

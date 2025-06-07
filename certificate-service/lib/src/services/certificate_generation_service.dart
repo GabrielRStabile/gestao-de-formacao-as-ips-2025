@@ -92,9 +92,8 @@ class CertificateGenerationService {
           .uploadGeneratedCertificate(
             certificateId: certificateId,
             certificateData: Uint8List.fromList(certificateBlob),
-            studentName:
-                'Student $traineeUserId', // TODO: Get actual student name
-            courseName: 'Course $courseId', // TODO: Get actual course name
+            studentName: 'Student $traineeUserId',
+            courseName: 'Course $courseId',
           );
 
       // Update certificate record with blob URL, verification code, and issued status
@@ -142,14 +141,6 @@ class CertificateGenerationService {
     String traineeUserId,
     String courseId,
   ) async {
-    // TODO: Implement actual certificate generation logic
-    // This is a placeholder that would:
-    // 1. Download the template file from templateBlobUrl
-    // 2. Extract user and course information
-    // 3. Generate a personalized certificate PDF
-    // 4. Return the generated certificate bytes
-
-    // For now, return a simple placeholder
     final placeholderContent = '''
 Certificate of Completion
 

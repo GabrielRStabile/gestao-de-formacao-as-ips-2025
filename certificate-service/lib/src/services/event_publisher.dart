@@ -18,10 +18,6 @@ class EventPublisher {
   static String get _username => env['AMQP_USER'] ?? 'guest';
   static String get _password => env['AMQP_PASSWORD'] ?? 'guest';
 
-  /// Exchange name for authentication events
-  static const String _authExchangeName = 'auth.events';
-  late final Exchange _authExchange;
-
   /// Exchange name for audit events
   static const String _auditExchangeName = 'audit.events';
   late final Exchange _auditExchange;
@@ -37,13 +33,6 @@ class EventPublisher {
 
       _client = Client(settings: settings);
       _channel = await _client!.channel();
-
-      // Declare exchanges
-      _authExchange = await _channel!.exchange(
-        _authExchangeName,
-        ExchangeType.TOPIC,
-        durable: true,
-      );
 
       _auditExchange = await _channel!.exchange(
         _auditExchangeName,

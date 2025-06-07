@@ -22,6 +22,12 @@ import 'package:certificate_service/src/repositories/template_repository.dart';
 import 'package:certificate_service/src/dtos/template_dtos.dart';
 import 'package:certificate_service/src/services/template_management_service.dart';
 import 'package:certificate_service/src/controllers/certificate_controller.dart';
+import 'package:certificate_service/src/providers/amqp_provider.dart';
+import 'package:certificate_service/src/dtos/enrollment_event_dto.dart';
+import 'package:certificate_service/src/services/enrollment_event_processor.dart';
+import 'package:certificate_service/src/services/certificate_issuance_service.dart';
+import 'package:certificate_service/src/repositories/issued_certificate_repository.dart';
+import 'package:certificate_service/src/controllers/enrollment_event_listener.dart';
 
 class VadenApplicationImpl implements VadenApplication {
   final _router = Router();
@@ -691,6 +697,16 @@ class VadenApplicationImpl implements VadenApplication {
     );
     _router.mount('/certificates', routerCertificateController.call);
 
+    _injector.addLazySingleton(AmqpProvider.new);
+
+    _injector.addLazySingleton(EnrollmentEventProcessor.new);
+
+    _injector.addLazySingleton(CertificateIssuanceService.new);
+
+    _injector.addLazySingleton(IssuedCertificateRepository.new);
+
+    _injector.addLazySingleton(EnrollmentEventListener.new);
+
     _injector.addLazySingleton(OpenApiConfig.create(paths, apis).call);
     _injector.commit();
 
@@ -955,6 +971,34 @@ class _DSON extends DSON {
         "createdAt",
         "updatedAt",
       ],
+    };
+
+    fromJsonMap[EnrollmentEventDto] = (Map<String, dynamic> json) {
+      return Function.apply(EnrollmentEventDto.new, [], {
+        #traineeUserId: json['traineeUserId'],
+        #enrollmentId: json['enrollmentId'],
+        #courseId: json['courseId'],
+        #timestamp: json['timestamp'],
+      });
+    };
+    toJsonMap[EnrollmentEventDto] = (object) {
+      final obj = object as EnrollmentEventDto;
+      return {
+        'traineeUserId': obj.traineeUserId,
+        'enrollmentId': obj.enrollmentId,
+        'courseId': obj.courseId,
+        'timestamp': obj.timestamp,
+      };
+    };
+    toOpenApiMap[EnrollmentEventDto] = {
+      "type": "object",
+      "properties": <String, dynamic>{
+        "traineeUserId": {"type": "string"},
+        "enrollmentId": {"type": "string"},
+        "courseId": {"type": "string"},
+        "timestamp": {"type": "string"},
+      },
+      "required": ["traineeUserId", "enrollmentId", "courseId", "timestamp"],
     };
 
     return (fromJsonMap, toJsonMap, toOpenApiMap);

@@ -20,6 +20,8 @@ dependencies:
   dotenv: ^4.2.0
   # MinIO/S3 client for object storage
   minio: ^3.5.7
+  # UUID generation
+  uuid: ^4.5.1
 
 
 # Development dependencies

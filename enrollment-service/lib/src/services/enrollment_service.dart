@@ -378,4 +378,64 @@ class EnrollmentService {
         return 'Alteração de status';
     }
   }
+
+  /// Gets enrollment details with status history by ID
+  ///
+  /// Includes authorization checks: managers can view any enrollment,
+  /// trainees can only view their own enrollments.
+  ///
+  /// [enrollmentId] The enrollment request ID
+  /// [requestingUserId] The ID of the user making the request
+  /// [userRole] The role of the requesting user ('gestor' or 'formando')
+  ///
+  /// Returns enrollment details with status history if found and authorized
+  /// Throws [Exception] if not found, not authorized, or query fails
+  Future<EnrollmentDetailsResponseDto?> getEnrollmentDetailsById({
+    required String enrollmentId,
+    required String requestingUserId,
+    required String userRole,
+  }) async {
+    // Validate inputs
+    if (enrollmentId.trim().isEmpty) {
+      throw Exception('Enrollment ID cannot be empty');
+    }
+    if (requestingUserId.trim().isEmpty) {
+      throw Exception('Requesting user ID cannot be empty');
+    }
+    if (userRole.trim().isEmpty) {
+      throw Exception('User role cannot be empty');
+    }
+
+    try {
+      // Get the enrollment request
+      final enrollmentRequest = await _enrollmentRequestRepository
+          .getEnrollmentRequestById(enrollmentId);
+
+      if (enrollmentRequest == null) {
+        return null;
+      }
+
+      // Authorization check: trainees can only view their own enrollments
+      if (userRole.toLowerCase() == 'formando' &&
+          enrollmentRequest.traineeUserId != requestingUserId) {
+        throw Exception(
+          'Unauthorized: formandos can only view their own enrollments',
+        );
+      }
+
+      // Managers can view any enrollment, so no additional check needed for 'gestor' role
+
+      // Get status history for the enrollment
+      final statusHistory = await _enrollmentStatusHistoryRepository
+          .getStatusHistoryByEnrollmentId(enrollmentId);
+
+      // Create and return the combined response
+      return EnrollmentDetailsResponseDto.fromModels(
+        enrollmentRequest: enrollmentRequest,
+        statusHistoryRecords: statusHistory,
+      );
+    } catch (e) {
+      throw Exception('Failed to get enrollment details: ${e.toString()}');
+    }
+  }
 }

@@ -480,3 +480,99 @@ class ManagerEnrollmentsQueryDto with Validator<ManagerEnrollmentsQueryDto> {
           .when((r) => r.endDate != null);
   }
 }
+
+/// Data Transfer Object for enrollment status history entry
+///
+/// Represents a single status change in the enrollment history.
+class EnrollmentStatusHistoryDto {
+  /// Unique history record identifier
+  final String historyId;
+
+  /// Previous status before the change
+  final String oldStatus;
+
+  /// New status after the change
+  final String newStatus;
+
+  /// When the status change occurred
+  final DateTime changedAt;
+
+  /// ID of the user who made the change (nullable)
+  final String? changedByUserId;
+
+  /// Reason for the status change (nullable)
+  final String? reason;
+
+  const EnrollmentStatusHistoryDto({
+    required this.historyId,
+    required this.oldStatus,
+    required this.newStatus,
+    required this.changedAt,
+    this.changedByUserId,
+    this.reason,
+  });
+
+  /// Creates an instance from an EnrollmentStatusHistory database model
+  factory EnrollmentStatusHistoryDto.fromModel(dynamic statusHistory) {
+    return EnrollmentStatusHistoryDto(
+      historyId: statusHistory.historyId,
+      oldStatus: statusHistory.oldStatus,
+      newStatus: statusHistory.newStatus,
+      changedAt: (statusHistory.changedAt as PgDateTime).toDateTime(),
+      changedByUserId: statusHistory.changedByUserId,
+      reason: statusHistory.reason,
+    );
+  }
+
+  /// Converts the instance to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'historyId': historyId,
+      'oldStatus': oldStatus,
+      'newStatus': newStatus,
+      'changedAt': changedAt.toIso8601String(),
+      'changedByUserId': changedByUserId,
+      'reason': reason,
+    };
+  }
+}
+
+/// Data Transfer Object for enrollment details with status history
+///
+/// Used for sending comprehensive enrollment information including
+/// enrollment details and complete status change history.
+class EnrollmentDetailsResponseDto {
+  /// Enrollment request details
+  final EnrollmentRequestResponseDto enrollment;
+
+  /// Complete status change history ordered by most recent first
+  final List<EnrollmentStatusHistoryDto> statusHistory;
+
+  const EnrollmentDetailsResponseDto({
+    required this.enrollment,
+    required this.statusHistory,
+  });
+
+  /// Creates an instance from enrollment and status history models
+  factory EnrollmentDetailsResponseDto.fromModels({
+    required dynamic enrollmentRequest,
+    required List<dynamic> statusHistoryRecords,
+  }) {
+    return EnrollmentDetailsResponseDto(
+      enrollment: EnrollmentRequestResponseDto.fromModel(enrollmentRequest),
+      statusHistory:
+          statusHistoryRecords
+              .map((history) => EnrollmentStatusHistoryDto.fromModel(history))
+              .toList(),
+    );
+  }
+
+  /// Converts the instance to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'enrollment': enrollment.toJson(),
+      'statusHistory':
+          statusHistory.map((history) => history.toJson()).toList(),
+    };
+  }
+}

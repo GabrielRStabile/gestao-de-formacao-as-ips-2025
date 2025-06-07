@@ -328,4 +328,83 @@ class EnrollmentController {
 
     return response;
   }
+
+  /// Gets specific enrollment details with status history
+  ///
+  /// GET /enrollments/{enrollmentId}
+  @ApiOperation(
+    summary: 'Get enrollment details',
+    description:
+        'Retrieves detailed information about a specific enrollment request including complete status history. Managers can view any enrollment, trainees can only view their own enrollments.',
+  )
+  @ApiResponse(
+    200,
+    description: 'Enrollment details retrieved successfully',
+    content: ApiContent(
+      type: 'application/json',
+      schema: EnrollmentDetailsResponseDto,
+    ),
+  )
+  @ApiResponse(
+    400,
+    description: 'Invalid enrollment ID parameter',
+    content: ApiContent(type: 'application/json', schema: ErrorDto),
+  )
+  @ApiResponse(
+    401,
+    description: 'Token JWT ausente ou inválido',
+    content: ApiContent(type: 'application/json', schema: ErrorDto),
+  )
+  @ApiResponse(
+    403,
+    description: 'Usuário não tem permissão para visualizar esta inscrição',
+    content: ApiContent(type: 'application/json', schema: ErrorDto),
+  )
+  @ApiResponse(
+    404,
+    description: 'Inscrição não encontrada',
+    content: ApiContent(type: 'application/json', schema: ErrorDto),
+  )
+  @ApiResponse(
+    500,
+    description: 'Ocorreu um erro interno ao processar sua solicitação',
+    content: ApiContent(type: 'application/json', schema: ErrorDto),
+  )
+  @ApiSecurity(['bearer'])
+  @UseMiddleware([TokenDecodeMiddleware])
+  @Get('/{enrollmentId}')
+  Future<EnrollmentDetailsResponseDto> getEnrollmentDetails(
+    Request request,
+  ) async {
+    // Extract enrollmentId from path parameters
+    final enrollmentId = request.params['enrollmentId'];
+
+    if (enrollmentId == null) {
+      throw ValidationError(['Path parameter enrollmentId is required']);
+    }
+
+    // Get user context from middleware
+    final userId = request.context['userId'] as String?;
+    final role = request.context['role'] as String?;
+
+    // Validate that user has appropriate role (manager or formando)
+    if (role != 'manager' && role != 'formando') {
+      throw ValidationError([
+        'Only managers and formandos can view enrollment details',
+      ]);
+    }
+
+    // Get enrollment details with authorization check
+    final response = await _enrollmentService.getEnrollmentDetailsById(
+      enrollmentId: enrollmentId,
+      requestingUserId: userId!,
+      userRole: role!,
+    );
+
+    if (response == null) {
+      throw ValidationError(['Enrollment not found']);
+    }
+
+    return response;
+  }
 }

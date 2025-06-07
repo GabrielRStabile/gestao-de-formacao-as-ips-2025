@@ -133,6 +133,74 @@ class IssuedCertificateService {
     }
   }
 
+  /// Lists certificates for formando role (my certificates)
+  ///
+  /// [request] The request containing filtering and pagination parameters
+  ///
+  /// Returns a paginated list of the formando's certificates
+  /// Throws [UnauthorizedException] if user is not formando
+  /// Throws [Exception] if there's an error retrieving certificates
+  Future<ListMyCertificatesResponseDto> listMyCertificates(
+    ListMyCertificatesRequestDto request,
+  ) async {
+    try {
+      // Validate role authorization
+      if (request.role != 'FORMANDO') {
+        throw UnauthorizedException(
+          'Only formando can access their own certificates',
+        );
+      }
+
+      // Validate user ID is present
+      if (request.userId == null || request.userId!.isEmpty) {
+        throw ValidationException('User ID is required');
+      }
+
+      // Get certificates with pagination
+      final certificates = await _issuedCertificateRepository
+          .getTraineeCertificatesWithPagination(
+            traineeUserId: request.userId!,
+            courseId: request.courseId,
+            page: request.page,
+            limit: request.limit,
+          );
+
+      // Get total count for pagination
+      final totalCount = await _issuedCertificateRepository
+          .getTraineeCertificatesCount(
+            traineeUserId: request.userId!,
+            courseId: request.courseId,
+          );
+
+      // Transform to DTOs
+      final certificateDtos =
+          certificates
+              .map((cert) => _certificateToMyCertificateDto(cert))
+              .toList();
+
+      // Calculate pagination data
+      final totalPages = (totalCount / request.limit).ceil();
+      final pagination = CertificatePaginationDto(
+        currentPage: request.page,
+        itemsPerPage: request.limit,
+        totalItems: totalCount,
+        totalPages: totalPages,
+        hasNextPage: request.page < totalPages,
+        hasPreviousPage: request.page > 1,
+      );
+
+      return ListMyCertificatesResponseDto(
+        certificates: certificateDtos,
+        pagination: pagination,
+      );
+    } catch (e) {
+      if (e is UnauthorizedException || e is ValidationException) {
+        rethrow;
+      }
+      throw Exception('Failed to list my certificates: ${e.toString()}');
+    }
+  }
+
   /// Converts an IssuedCertificate model to DTO
   ///
   /// [certificate] The certificate model to convert
@@ -150,6 +218,25 @@ class IssuedCertificateService {
       verificationCode: certificate.verificationCode,
       createdAt: certificate.createdAt.dateTime,
       emissionApprovedAt: certificate.emissionApprovedAt?.dateTime,
+      issuedAt: certificate.issuedAt?.dateTime,
+      updatedAt: certificate.updatedAt.dateTime,
+    );
+  }
+
+  /// Converts an IssuedCertificate model to MyCertificateDto for formando view
+  ///
+  /// [certificate] The certificate model to convert
+  ///
+  /// Returns the MyCertificateDto
+  MyCertificateDto _certificateToMyCertificateDto(
+    IssuedCertificate certificate,
+  ) {
+    return MyCertificateDto(
+      certificateId: certificate.certificateId,
+      courseId: certificate.courseId,
+      status: certificate.status,
+      certificateBlobUrl: certificate.certificateBlobUrl,
+      verificationCode: certificate.verificationCode,
       issuedAt: certificate.issuedAt?.dateTime,
       updatedAt: certificate.updatedAt.dateTime,
     );

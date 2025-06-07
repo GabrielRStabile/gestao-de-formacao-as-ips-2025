@@ -282,4 +282,87 @@ class IssuedCertificateRepository {
       );
     }
   }
+
+  /// Gets certificates for a specific trainee with pagination and optional course filtering
+  ///
+  /// [traineeUserId] The trainee user identifier
+  /// [courseId] Optional course ID to filter certificates
+  /// [page] Page number (1-based)
+  /// [limit] Number of items per page
+  ///
+  /// Returns a paginated list of certificates for the trainee
+  Future<List<IssuedCertificate>> getTraineeCertificatesWithPagination({
+    required String traineeUserId,
+    String? courseId,
+    required int page,
+    required int limit,
+  }) async {
+    try {
+      final query = _database.database.select(
+        _database.database.issuedCertificates,
+      );
+
+      // Filter by trainee user ID
+      query.where((cert) => cert.traineeUserId.equals(traineeUserId));
+
+      // Optional course filter
+      if (courseId != null) {
+        query.where((cert) => cert.courseId.equals(courseId));
+      }
+
+      // Order by creation date (most recent first)
+      query.orderBy([(cert) => OrderingTerm.desc(cert.createdAt)]);
+
+      // Apply pagination
+      final offset = (page - 1) * limit;
+      query.limit(limit, offset: offset);
+
+      return await query.get();
+    } catch (e) {
+      throw Exception('Failed to get trainee certificates: ${e.toString()}');
+    }
+  }
+
+  /// Gets the total count of certificates for a specific trainee
+  ///
+  /// [traineeUserId] The trainee user identifier
+  /// [courseId] Optional course ID to filter certificates
+  ///
+  /// Returns the total count of certificates for the trainee
+  Future<int> getTraineeCertificatesCount({
+    required String traineeUserId,
+    String? courseId,
+  }) async {
+    try {
+      final query = _database.database.selectOnly(
+        _database.database.issuedCertificates,
+      )..addColumns([
+        _database.database.issuedCertificates.certificateId.count(),
+      ]);
+
+      // Filter by trainee user ID
+      query.where(
+        _database.database.issuedCertificates.traineeUserId.equals(
+          traineeUserId,
+        ),
+      );
+
+      // Optional course filter
+      if (courseId != null) {
+        query.where(
+          _database.database.issuedCertificates.courseId.equals(courseId),
+        );
+      }
+
+      final result = await query.getSingle();
+      return result.read(
+            _database.database.issuedCertificates.certificateId.count(),
+          ) ??
+          0;
+    } catch (e) {
+      throw Exception(
+        'Failed to get trainee certificates count: ${e.toString()}',
+      );
+    }
+  }
 }

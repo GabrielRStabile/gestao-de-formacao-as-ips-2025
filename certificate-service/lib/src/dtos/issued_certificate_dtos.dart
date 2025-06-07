@@ -199,3 +199,112 @@ class CertificateApprovalResponseDto {
     required this.message,
   });
 }
+
+/// Request DTO for listing my certificates (formando role)
+///
+/// Used by formando role to list their own certificates
+@DTO()
+class ListMyCertificatesRequestDto
+    with Validator<ListMyCertificatesRequestDto> {
+  /// Optional course ID to filter certificates
+  final String? courseId;
+
+  /// Page number for pagination (default: 1)
+  final int page;
+
+  /// Number of items per page (default: 10, max: 50)
+  final int limit;
+
+  /// User ID from JWT token
+  final String? userId;
+
+  /// User email from JWT token
+  final String? email;
+
+  /// User role from JWT token
+  final String? role;
+
+  const ListMyCertificatesRequestDto({
+    this.courseId,
+    required this.page,
+    required this.limit,
+    this.userId,
+    this.email,
+    this.role,
+  });
+
+  @override
+  LucidValidator<ListMyCertificatesRequestDto> validate(
+    ValidatorBuilder<ListMyCertificatesRequestDto> builder,
+  ) {
+    return builder
+      ..ruleFor((dto) => dto.page, key: 'page').isNotNull().greaterThan(0)
+      ..ruleFor(
+        (dto) => dto.limit,
+        key: 'limit',
+      ).isNotNull().greaterThan(0).lessThan(50)
+      ..ruleFor(
+        (dto) => dto.role,
+        key: 'role',
+      ).isNotNull().equalTo((entity) => 'FORMANDO')
+      ..ruleFor((dto) => dto.userId, key: 'userId').isNotNull().notEmpty();
+  }
+}
+
+/// DTO representing a certificate with course information for formando view
+@DTO()
+class MyCertificateDto {
+  /// Unique identifier for the certificate
+  final String certificateId;
+
+  /// ID of the course
+  final String courseId;
+
+  /// Name of the course (fetched from course service)
+  final String? courseName;
+
+  /// Current status of the certificate
+  final String status;
+
+  /// URL to the generated certificate blob (if applicable)
+  final String? certificateBlobUrl;
+
+  /// Verification code for the certificate (if applicable)
+  final String? verificationCode;
+
+  /// When the certificate was issued (if applicable)
+  final DateTime? issuedAt;
+
+  /// When the certificate expires (if applicable)
+  final DateTime? expiresAt;
+
+  /// When the record was last updated
+  final DateTime updatedAt;
+
+  const MyCertificateDto({
+    required this.certificateId,
+    required this.courseId,
+    this.courseName,
+    required this.status,
+    this.certificateBlobUrl,
+    this.verificationCode,
+    this.issuedAt,
+    this.expiresAt,
+    required this.updatedAt,
+  });
+}
+
+/// Response DTO for listing my certificates
+@DTO()
+class ListMyCertificatesResponseDto {
+  /// List of certificates for the formando
+  final List<MyCertificateDto> certificates;
+
+  /// Pagination information
+  final CertificatePaginationDto pagination;
+
+  const ListMyCertificatesResponseDto({
+    required this.certificates,
+    required this.pagination,
+  });
+}

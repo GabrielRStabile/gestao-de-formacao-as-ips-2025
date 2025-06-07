@@ -983,6 +983,139 @@ class VadenApplicationImpl implements VadenApplication {
         handlerCertificateControllerapproveCertificate,
       ),
     );
+    paths['/certificates/my-certificates'] = <String, dynamic>{
+      ...paths['/certificates/my-certificates'] ?? <String, dynamic>{},
+      'get': {
+        'tags': ['Certificate Management'],
+        'summary': '',
+        'description': '',
+        'responses': <String, dynamic>{},
+        'parameters': <Map<String, dynamic>>[],
+        'security': <Map<String, dynamic>>[],
+      },
+    };
+
+    paths['/certificates/my-certificates']['get']['security'] = [
+      {'bearer': []},
+    ];
+    paths['/certificates/my-certificates']['get']['summary'] =
+        'List my certificates';
+    paths['/certificates/my-certificates']['get']['description'] =
+        'Lists certificates for the authenticated formando user with optional filtering and pagination. Requires Formando role.';
+    paths['/certificates/my-certificates']['get']['responses']['200'] = {
+      'description': 'Certificates retrieved successfully',
+      'content': <String, dynamic>{},
+    };
+
+    paths['/certificates/my-certificates']['get']['responses']['200']['content']['application/json'] =
+        <String, dynamic>{};
+
+    paths['/certificates/my-certificates']['get']['responses']['200']['content']['application/json']['schema'] =
+        {'\$ref': '#/components/schemas/ListMyCertificatesResponseDto'};
+
+    paths['/certificates/my-certificates']['get']['responses']['400'] = {
+      'description': 'Invalid input parameters',
+      'content': <String, dynamic>{},
+    };
+
+    paths['/certificates/my-certificates']['get']['responses']['400']['content']['application/json'] =
+        <String, dynamic>{};
+
+    paths['/certificates/my-certificates']['get']['responses']['400']['content']['application/json']['schema'] =
+        {'\$ref': '#/components/schemas/ErrorDto'};
+
+    paths['/certificates/my-certificates']['get']['responses']['401'] = {
+      'description': 'Token JWT ausente ou inválido',
+      'content': <String, dynamic>{},
+    };
+
+    paths['/certificates/my-certificates']['get']['responses']['401']['content']['application/json'] =
+        <String, dynamic>{};
+
+    paths['/certificates/my-certificates']['get']['responses']['401']['content']['application/json']['schema'] =
+        {'\$ref': '#/components/schemas/ErrorDto'};
+
+    paths['/certificates/my-certificates']['get']['responses']['403'] = {
+      'description': 'Usuário não é formando',
+      'content': <String, dynamic>{},
+    };
+
+    paths['/certificates/my-certificates']['get']['responses']['403']['content']['application/json'] =
+        <String, dynamic>{};
+
+    paths['/certificates/my-certificates']['get']['responses']['403']['content']['application/json']['schema'] =
+        {'\$ref': '#/components/schemas/ErrorDto'};
+
+    paths['/certificates/my-certificates']['get']['responses']['500'] = {
+      'description': 'Ocorreu um erro interno ao processar sua solicitação',
+      'content': <String, dynamic>{},
+    };
+
+    paths['/certificates/my-certificates']['get']['responses']['500']['content']['application/json'] =
+        <String, dynamic>{};
+
+    paths['/certificates/my-certificates']['get']['responses']['500']['content']['application/json']['schema'] =
+        {'\$ref': '#/components/schemas/ErrorDto'};
+
+    var pipelineCertificateControllerlistMyCertificates = const Pipeline();
+    pipelineCertificateControllerlistMyCertificates =
+        pipelineCertificateControllerlistMyCertificates.addMiddleware((
+          Handler inner,
+        ) {
+          return (Request request) async {
+            final guard = _injector.get<TokenDecodeMiddleware>();
+            return await guard.handler(request, inner);
+          };
+        });
+    paths['/certificates/my-certificates']['get']['parameters']?.add({
+      'name': 'courseId',
+      'in': 'query',
+      'required': false,
+      'schema': {'type': 'string'},
+    });
+
+    paths['/certificates/my-certificates']['get']['parameters']?.add({
+      'name': 'page',
+      'in': 'query',
+      'required': false,
+      'schema': {'type': 'string'},
+    });
+
+    paths['/certificates/my-certificates']['get']['parameters']?.add({
+      'name': 'limit',
+      'in': 'query',
+      'required': false,
+      'schema': {'type': 'string'},
+    });
+
+    final handlerCertificateControllerlistMyCertificates =
+        (Request request) async {
+          final courseId = _parse<String?>(
+            request.url.queryParameters['courseId'],
+          );
+          final page = _parse<int?>(request.url.queryParameters['page']);
+          final limit = _parse<int?>(request.url.queryParameters['limit']);
+          final ctrl = _injector.get<CertificateController>();
+          final result = await ctrl.listMyCertificates(
+            courseId,
+            page,
+            limit,
+            request,
+          );
+          final jsoResponse = _injector
+              .get<DSON>()
+              .toJson<ListMyCertificatesResponseDto>(result);
+          return Response.ok(
+            jsonEncode(jsoResponse),
+            headers: {'Content-Type': 'application/json'},
+          );
+        };
+    routerCertificateController.get(
+      '/my-certificates',
+      pipelineCertificateControllerlistMyCertificates.addHandler(
+        handlerCertificateControllerlistMyCertificates,
+      ),
+    );
     _router.mount('/certificates', routerCertificateController.call);
 
     _injector.addLazySingleton(AmqpProvider.new);
@@ -1509,6 +1642,118 @@ class _DSON extends DSON {
         "message": {"type": "string"},
       },
       "required": ["certificateId", "status", "message"],
+    };
+
+    fromJsonMap[ListMyCertificatesRequestDto] = (Map<String, dynamic> json) {
+      return Function.apply(ListMyCertificatesRequestDto.new, [], {
+        #courseId: json['courseId'],
+        #page: json['page'],
+        #limit: json['limit'],
+        #userId: json['userId'],
+        #email: json['email'],
+        #role: json['role'],
+      });
+    };
+    toJsonMap[ListMyCertificatesRequestDto] = (object) {
+      final obj = object as ListMyCertificatesRequestDto;
+      return {
+        'courseId': obj.courseId,
+        'page': obj.page,
+        'limit': obj.limit,
+        'userId': obj.userId,
+        'email': obj.email,
+        'role': obj.role,
+      };
+    };
+    toOpenApiMap[ListMyCertificatesRequestDto] = {
+      "type": "object",
+      "properties": <String, dynamic>{
+        "courseId": {"type": "string"},
+        "page": {"type": "integer"},
+        "limit": {"type": "integer"},
+        "userId": {"type": "string"},
+        "email": {"type": "string"},
+        "role": {"type": "string"},
+      },
+      "required": ["page", "limit"],
+    };
+
+    fromJsonMap[MyCertificateDto] = (Map<String, dynamic> json) {
+      return Function.apply(MyCertificateDto.new, [], {
+        #certificateId: json['certificateId'],
+        #courseId: json['courseId'],
+        #courseName: json['courseName'],
+        #status: json['status'],
+        #certificateBlobUrl: json['certificateBlobUrl'],
+        #verificationCode: json['verificationCode'],
+        #issuedAt: json['issuedAt'] == null
+            ? null
+            : fromJson<DateTime?>(json['issuedAt']),
+        #expiresAt: json['expiresAt'] == null
+            ? null
+            : fromJson<DateTime?>(json['expiresAt']),
+        #updatedAt: fromJson<DateTime>(json['updatedAt']),
+      });
+    };
+    toJsonMap[MyCertificateDto] = (object) {
+      final obj = object as MyCertificateDto;
+      return {
+        'certificateId': obj.certificateId,
+        'courseId': obj.courseId,
+        'courseName': obj.courseName,
+        'status': obj.status,
+        'certificateBlobUrl': obj.certificateBlobUrl,
+        'verificationCode': obj.verificationCode,
+        'issuedAt': obj.issuedAt == null
+            ? null
+            : toJson<DateTime?>(obj.issuedAt!),
+        'expiresAt': obj.expiresAt == null
+            ? null
+            : toJson<DateTime?>(obj.expiresAt!),
+        'updatedAt': toJson<DateTime>(obj.updatedAt),
+      };
+    };
+    toOpenApiMap[MyCertificateDto] = {
+      "type": "object",
+      "properties": <String, dynamic>{
+        "certificateId": {"type": "string"},
+        "courseId": {"type": "string"},
+        "courseName": {"type": "string"},
+        "status": {"type": "string"},
+        "certificateBlobUrl": {"type": "string"},
+        "verificationCode": {"type": "string"},
+        "issuedAt": {r"$ref": "#/components/schemas/DateTime?"},
+        "expiresAt": {r"$ref": "#/components/schemas/DateTime?"},
+        "updatedAt": {r"$ref": "#/components/schemas/DateTime"},
+      },
+      "required": ["certificateId", "courseId", "status", "updatedAt"],
+    };
+
+    fromJsonMap[ListMyCertificatesResponseDto] = (Map<String, dynamic> json) {
+      return Function.apply(ListMyCertificatesResponseDto.new, [], {
+        #certificates: fromJsonList<MyCertificateDto>(json['certificates']),
+        #pagination: fromJson<CertificatePaginationDto>(json['pagination']),
+      });
+    };
+    toJsonMap[ListMyCertificatesResponseDto] = (object) {
+      final obj = object as ListMyCertificatesResponseDto;
+      return {
+        'certificates': toJsonList<MyCertificateDto>(obj.certificates),
+        'pagination': toJson<CertificatePaginationDto>(obj.pagination),
+      };
+    };
+    toOpenApiMap[ListMyCertificatesResponseDto] = {
+      "type": "object",
+      "properties": <String, dynamic>{
+        "certificates": {
+          "type": "array",
+          "items": {r"$ref": "#/components/schemas/MyCertificateDto"},
+        },
+        "pagination": {
+          r"$ref": "#/components/schemas/CertificatePaginationDto",
+        },
+      },
+      "required": ["certificates", "pagination"],
     };
 
     return (fromJsonMap, toJsonMap, toOpenApiMap);

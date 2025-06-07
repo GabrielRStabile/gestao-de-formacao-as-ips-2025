@@ -483,6 +483,79 @@ class CertificateController {
 
     return response;
   }
+
+  /// Lists certificates for the authenticated formando user
+  ///
+  /// GET /certificates/my-certificates
+  @ApiOperation(
+    summary: 'List my certificates',
+    description:
+        'Lists certificates for the authenticated formando user with optional filtering and pagination. Requires Formando role.',
+  )
+  @ApiResponse(
+    200,
+    description: 'Certificates retrieved successfully',
+    content: ApiContent(
+      type: 'application/json',
+      schema: ListMyCertificatesResponseDto,
+    ),
+  )
+  @ApiResponse(
+    400,
+    description: 'Invalid input parameters',
+    content: ApiContent(type: 'application/json', schema: ErrorDto),
+  )
+  @ApiResponse(
+    401,
+    description: 'Token JWT ausente ou inválido',
+    content: ApiContent(type: 'application/json', schema: ErrorDto),
+  )
+  @ApiResponse(
+    403,
+    description: 'Usuário não é formando',
+    content: ApiContent(type: 'application/json', schema: ErrorDto),
+  )
+  @ApiResponse(
+    500,
+    description: 'Ocorreu um erro interno ao processar sua solicitação',
+    content: ApiContent(type: 'application/json', schema: ErrorDto),
+  )
+  @ApiSecurity(['bearer'])
+  @UseMiddleware([TokenDecodeMiddleware])
+  @Get('/my-certificates')
+  Future<ListMyCertificatesResponseDto> listMyCertificates(
+    @Query('courseId') String? courseId,
+    @Query('page') int? page,
+    @Query('limit') int? limit,
+    Request request,
+  ) async {
+    // Create request DTO with query parameters and context
+    final requestDto = ListMyCertificatesRequestDto(
+      courseId: courseId,
+      page: page ?? 1,
+      limit: limit ?? 10,
+      userId: request.userId,
+      email: request.email,
+      role: request.role,
+    );
+
+    // Validate the request DTO
+    final validationResult = requestDto
+        .validate(ValidatorBuilder<ListMyCertificatesRequestDto>())
+        .validate(requestDto);
+
+    if (!validationResult.isValid) {
+      throw ValidationError(
+        validationResult.exceptions.map((e) => e.message).toList(),
+      );
+    }
+
+    final response = await _issuedCertificateService.listMyCertificates(
+      requestDto,
+    );
+
+    return response;
+  }
 }
 
 extension on Request {

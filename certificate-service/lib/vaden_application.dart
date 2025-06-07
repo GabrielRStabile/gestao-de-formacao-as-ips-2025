@@ -30,6 +30,11 @@ import 'package:certificate_service/src/repositories/issued_certificate_reposito
 import 'package:certificate_service/src/controllers/enrollment_event_listener.dart';
 import 'package:certificate_service/src/dtos/issued_certificate_dtos.dart';
 import 'package:certificate_service/src/services/issued_certificate_service.dart';
+import 'package:certificate_service/src/dtos/certificate_event_dto.dart';
+import 'package:certificate_service/src/services/certificate_event_processor.dart';
+import 'package:certificate_service/src/services/certificate_generation_service.dart';
+import 'package:certificate_service/src/utils/verification_code_generator.dart';
+import 'package:certificate_service/src/controllers/certificate_event_listener.dart';
 
 class VadenApplicationImpl implements VadenApplication {
   final _router = Router();
@@ -1261,6 +1266,14 @@ class VadenApplicationImpl implements VadenApplication {
 
     _injector.addLazySingleton(IssuedCertificateService.new);
 
+    _injector.addLazySingleton(CertificateEventProcessor.new);
+
+    _injector.addLazySingleton(CertificateGenerationService.new);
+
+    _injector.addLazySingleton(VerificationCodeGenerator.new);
+
+    _injector.addLazySingleton(CertificateEventListener.new);
+
     _injector.addLazySingleton(OpenApiConfig.create(paths, apis).call);
     _injector.commit();
 
@@ -1938,6 +1951,59 @@ class _DSON extends DSON {
         "message": {"type": "string"},
       },
       "required": ["downloadUrl", "certificateId", "message"],
+    };
+
+    fromJsonMap[CertificateApprovedEventDto] = (Map<String, dynamic> json) {
+      return Function.apply(CertificateApprovedEventDto.new, [], {
+        #eventId: json['eventId'],
+        #eventTimestamp: json['eventTimestamp'],
+        #sourceService: json['sourceService'],
+        #eventType: json['eventType'],
+        #certificateId: json['certificateId'],
+        #traineeUserId: json['traineeUserId'],
+        #courseId: json['courseId'],
+        #approvedByUserId: json['approvedByUserId'],
+        #status: json['status'],
+      });
+    };
+    toJsonMap[CertificateApprovedEventDto] = (object) {
+      final obj = object as CertificateApprovedEventDto;
+      return {
+        'eventId': obj.eventId,
+        'eventTimestamp': obj.eventTimestamp,
+        'sourceService': obj.sourceService,
+        'eventType': obj.eventType,
+        'certificateId': obj.certificateId,
+        'traineeUserId': obj.traineeUserId,
+        'courseId': obj.courseId,
+        'approvedByUserId': obj.approvedByUserId,
+        'status': obj.status,
+      };
+    };
+    toOpenApiMap[CertificateApprovedEventDto] = {
+      "type": "object",
+      "properties": <String, dynamic>{
+        "eventId": {"type": "string"},
+        "eventTimestamp": {"type": "string"},
+        "sourceService": {"type": "string"},
+        "eventType": {"type": "string"},
+        "certificateId": {"type": "string"},
+        "traineeUserId": {"type": "string"},
+        "courseId": {"type": "string"},
+        "approvedByUserId": {"type": "string"},
+        "status": {"type": "string"},
+      },
+      "required": [
+        "eventId",
+        "eventTimestamp",
+        "sourceService",
+        "eventType",
+        "certificateId",
+        "traineeUserId",
+        "courseId",
+        "approvedByUserId",
+        "status",
+      ],
     };
 
     return (fromJsonMap, toJsonMap, toOpenApiMap);

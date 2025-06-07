@@ -61,6 +61,52 @@ class MinIOCertificateStorageService implements CertificateStorageService {
   }
 
   @override
+  Future<String> updateCertificateTemplate({
+    required String templateId,
+    required Uint8List templateData,
+    required String fileName,
+  }) async {
+    try {
+      // Check if template exists first
+      final exists = await certificateTemplateExists(templateId: templateId);
+      if (!exists) {
+        throw CertificateStorageException(
+          'Certificate template not found',
+          operation: 'updateTemplate',
+          resourceId: templateId,
+        );
+      }
+
+      final objectKey = _buildTemplateObjectKey(templateId);
+      final metadata = {
+        'template-id': templateId,
+        'original-filename': fileName,
+        'uploaded-at': DateTime.now().toIso8601String(),
+        'updated-at': DateTime.now().toIso8601String(),
+      };
+
+      // MinIO putObject automatically overwrites existing objects with the same key
+      return await _objectStorageService.uploadObject(
+        bucketName: _templatesBucketName,
+        objectKey: objectKey,
+        data: templateData,
+        contentType: 'application/pdf',
+        metadata: metadata,
+      );
+    } catch (e) {
+      if (e is CertificateStorageException) {
+        rethrow;
+      }
+      throw CertificateStorageException(
+        'Failed to update certificate template',
+        operation: 'updateTemplate',
+        resourceId: templateId,
+        cause: e,
+      );
+    }
+  }
+
+  @override
   Future<Uint8List> downloadCertificateTemplate({
     required String templateId,
   }) async {

@@ -19,3 +19,8 @@ class TemplateNotFoundError extends BaseError {
 class TemplateServiceError extends BaseError {
   TemplateServiceError(String message) : super(500, message);
 }
+
+/// Error thrown when there's a conflict in template operations
+class TemplateConflictError extends BaseError {
+  TemplateConflictError(String message) : super(409, message);
+}

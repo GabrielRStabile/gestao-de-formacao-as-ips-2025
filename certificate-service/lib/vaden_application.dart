@@ -287,6 +287,298 @@ class VadenApplicationImpl implements VadenApplication {
         handlerCertificateControllerlistTemplates,
       ),
     );
+    paths['/certificates/templates'] = <String, dynamic>{
+      ...paths['/certificates/templates'] ?? <String, dynamic>{},
+      'post': {
+        'tags': ['Certificate Management'],
+        'summary': '',
+        'description': '',
+        'responses': <String, dynamic>{},
+        'parameters': <Map<String, dynamic>>[],
+        'security': <Map<String, dynamic>>[],
+      },
+    };
+
+    paths['/certificates/templates']['post']['security'] = [
+      {'bearer': []},
+    ];
+    paths['/certificates/templates']['post']['summary'] =
+        'Create certificate template';
+    paths['/certificates/templates']['post']['description'] =
+        'Creates a new certificate template with PDF file upload. Requires Gestor role.';
+    paths['/certificates/templates']['post']['responses']['201'] = {
+      'description': 'Template created successfully',
+      'content': <String, dynamic>{},
+    };
+
+    paths['/certificates/templates']['post']['responses']['201']['content']['application/json'] =
+        <String, dynamic>{};
+
+    paths['/certificates/templates']['post']['responses']['201']['content']['application/json']['schema'] =
+        {'\$ref': '#/components/schemas/TemplateOperationResponseDto'};
+
+    paths['/certificates/templates']['post']['responses']['400'] = {
+      'description': 'Invalid input parameters or file',
+      'content': <String, dynamic>{},
+    };
+
+    paths['/certificates/templates']['post']['responses']['400']['content']['application/json'] =
+        <String, dynamic>{};
+
+    paths['/certificates/templates']['post']['responses']['400']['content']['application/json']['schema'] =
+        {'\$ref': '#/components/schemas/ErrorDto'};
+
+    paths['/certificates/templates']['post']['responses']['401'] = {
+      'description': 'Token JWT ausente ou inválido',
+      'content': <String, dynamic>{},
+    };
+
+    paths['/certificates/templates']['post']['responses']['401']['content']['application/json'] =
+        <String, dynamic>{};
+
+    paths['/certificates/templates']['post']['responses']['401']['content']['application/json']['schema'] =
+        {'\$ref': '#/components/schemas/ErrorDto'};
+
+    paths['/certificates/templates']['post']['responses']['403'] = {
+      'description': 'Usuário não é gestor',
+      'content': <String, dynamic>{},
+    };
+
+    paths['/certificates/templates']['post']['responses']['403']['content']['application/json'] =
+        <String, dynamic>{};
+
+    paths['/certificates/templates']['post']['responses']['403']['content']['application/json']['schema'] =
+        {'\$ref': '#/components/schemas/ErrorDto'};
+
+    paths['/certificates/templates']['post']['responses']['409'] = {
+      'description': 'Já existe um template cadastrado para o curso',
+      'content': <String, dynamic>{},
+    };
+
+    paths['/certificates/templates']['post']['responses']['409']['content']['application/json'] =
+        <String, dynamic>{};
+
+    paths['/certificates/templates']['post']['responses']['409']['content']['application/json']['schema'] =
+        {'\$ref': '#/components/schemas/ErrorDto'};
+
+    paths['/certificates/templates']['post']['responses']['500'] = {
+      'description': 'Ocorreu um erro interno ao processar sua solicitação',
+      'content': <String, dynamic>{},
+    };
+
+    paths['/certificates/templates']['post']['responses']['500']['content']['application/json'] =
+        <String, dynamic>{};
+
+    paths['/certificates/templates']['post']['responses']['500']['content']['application/json']['schema'] =
+        {'\$ref': '#/components/schemas/ErrorDto'};
+
+    var pipelineCertificateControllercreateTemplate = const Pipeline();
+    pipelineCertificateControllercreateTemplate =
+        pipelineCertificateControllercreateTemplate.addMiddleware((
+          Handler inner,
+        ) {
+          return (Request request) async {
+            final guard = _injector.get<TokenDecodeMiddleware>();
+            return await guard.handler(request, inner);
+          };
+        });
+    paths['/certificates/templates']['post']['parameters']?.add({
+      'name': 'courseId',
+      'in': 'query',
+      'required': true,
+      'schema': {'type': 'string'},
+    });
+
+    paths['/certificates/templates']['post']['parameters']?.add({
+      'name': 'templateName',
+      'in': 'query',
+      'required': true,
+      'schema': {'type': 'string'},
+    });
+
+    final handlerCertificateControllercreateTemplate = (Request request) async {
+      if (request.url.queryParameters['courseId'] == null) {
+        return Response(
+          400,
+          body: jsonEncode({'error': 'Query param is required (courseId)'}),
+        );
+      }
+      final courseId = _parse<String>(request.url.queryParameters['courseId'])!;
+
+      if (request.url.queryParameters['templateName'] == null) {
+        return Response(
+          400,
+          body: jsonEncode({'error': 'Query param is required (templateName)'}),
+        );
+      }
+      final templateName = _parse<String>(
+        request.url.queryParameters['templateName'],
+      )!;
+
+      final ctrl = _injector.get<CertificateController>();
+      final result = await ctrl.createTemplate(request, courseId, templateName);
+      final jsoResponse = _injector
+          .get<DSON>()
+          .toJson<TemplateOperationResponseDto>(result);
+      return Response.ok(
+        jsonEncode(jsoResponse),
+        headers: {'Content-Type': 'application/json'},
+      );
+    };
+    routerCertificateController.post(
+      '/templates',
+      pipelineCertificateControllercreateTemplate.addHandler(
+        handlerCertificateControllercreateTemplate,
+      ),
+    );
+    paths['/certificates/templates/{templateId}'] = <String, dynamic>{
+      ...paths['/certificates/templates/{templateId}'] ?? <String, dynamic>{},
+      'put': {
+        'tags': ['Certificate Management'],
+        'summary': '',
+        'description': '',
+        'responses': <String, dynamic>{},
+        'parameters': <Map<String, dynamic>>[],
+        'security': <Map<String, dynamic>>[],
+      },
+    };
+
+    paths['/certificates/templates/{templateId}']['put']['security'] = [
+      {'bearer': []},
+    ];
+    paths['/certificates/templates/{templateId}']['put']['summary'] =
+        'Update certificate template';
+    paths['/certificates/templates/{templateId}']['put']['description'] =
+        'Updates an existing certificate template with new name and/or PDF file. Requires Gestor role.';
+    paths['/certificates/templates/{templateId}']['put']['responses']['200'] = {
+      'description': 'Template updated successfully',
+      'content': <String, dynamic>{},
+    };
+
+    paths['/certificates/templates/{templateId}']['put']['responses']['200']['content']['application/json'] =
+        <String, dynamic>{};
+
+    paths['/certificates/templates/{templateId}']['put']['responses']['200']['content']['application/json']['schema'] =
+        {'\$ref': '#/components/schemas/TemplateOperationResponseDto'};
+
+    paths['/certificates/templates/{templateId}']['put']['responses']['400'] = {
+      'description': 'Invalid input parameters or file',
+      'content': <String, dynamic>{},
+    };
+
+    paths['/certificates/templates/{templateId}']['put']['responses']['400']['content']['application/json'] =
+        <String, dynamic>{};
+
+    paths['/certificates/templates/{templateId}']['put']['responses']['400']['content']['application/json']['schema'] =
+        {'\$ref': '#/components/schemas/ErrorDto'};
+
+    paths['/certificates/templates/{templateId}']['put']['responses']['401'] = {
+      'description': 'Token JWT ausente ou inválido',
+      'content': <String, dynamic>{},
+    };
+
+    paths['/certificates/templates/{templateId}']['put']['responses']['401']['content']['application/json'] =
+        <String, dynamic>{};
+
+    paths['/certificates/templates/{templateId}']['put']['responses']['401']['content']['application/json']['schema'] =
+        {'\$ref': '#/components/schemas/ErrorDto'};
+
+    paths['/certificates/templates/{templateId}']['put']['responses']['403'] = {
+      'description': 'Usuário não é gestor',
+      'content': <String, dynamic>{},
+    };
+
+    paths['/certificates/templates/{templateId}']['put']['responses']['403']['content']['application/json'] =
+        <String, dynamic>{};
+
+    paths['/certificates/templates/{templateId}']['put']['responses']['403']['content']['application/json']['schema'] =
+        {'\$ref': '#/components/schemas/ErrorDto'};
+
+    paths['/certificates/templates/{templateId}']['put']['responses']['404'] = {
+      'description': 'Template não encontrado',
+      'content': <String, dynamic>{},
+    };
+
+    paths['/certificates/templates/{templateId}']['put']['responses']['404']['content']['application/json'] =
+        <String, dynamic>{};
+
+    paths['/certificates/templates/{templateId}']['put']['responses']['404']['content']['application/json']['schema'] =
+        {'\$ref': '#/components/schemas/ErrorDto'};
+
+    paths['/certificates/templates/{templateId}']['put']['responses']['500'] = {
+      'description': 'Ocorreu um erro interno ao processar sua solicitação',
+      'content': <String, dynamic>{},
+    };
+
+    paths['/certificates/templates/{templateId}']['put']['responses']['500']['content']['application/json'] =
+        <String, dynamic>{};
+
+    paths['/certificates/templates/{templateId}']['put']['responses']['500']['content']['application/json']['schema'] =
+        {'\$ref': '#/components/schemas/ErrorDto'};
+
+    var pipelineCertificateControllerupdateTemplate = const Pipeline();
+    pipelineCertificateControllerupdateTemplate =
+        pipelineCertificateControllerupdateTemplate.addMiddleware((
+          Handler inner,
+        ) {
+          return (Request request) async {
+            final guard = _injector.get<TokenDecodeMiddleware>();
+            return await guard.handler(request, inner);
+          };
+        });
+    paths['/certificates/templates/{templateId}']['put']['parameters']?.add({
+      'name': 'templateId',
+      'in': 'path',
+      'required': true,
+      'schema': {'type': 'string'},
+    });
+
+    paths['/certificates/templates/{templateId}']['put']['parameters']?.add({
+      'name': 'templateName',
+      'in': 'query',
+      'required': true,
+      'schema': {'type': 'string'},
+    });
+
+    final handlerCertificateControllerupdateTemplate = (Request request) async {
+      if (request.params['templateId'] == null) {
+        return Response(
+          400,
+          body: jsonEncode({'error': 'Path Param is required (templateId)'}),
+        );
+      }
+      final templateId = _parse<String>(request.params['templateId'])!;
+
+      if (request.url.queryParameters['templateName'] == null) {
+        return Response(
+          400,
+          body: jsonEncode({'error': 'Query param is required (templateName)'}),
+        );
+      }
+      final templateName = _parse<String>(
+        request.url.queryParameters['templateName'],
+      )!;
+
+      final ctrl = _injector.get<CertificateController>();
+      final result = await ctrl.updateTemplate(
+        templateId,
+        templateName,
+        request,
+      );
+      final jsoResponse = _injector
+          .get<DSON>()
+          .toJson<TemplateOperationResponseDto>(result);
+      return Response.ok(
+        jsonEncode(jsoResponse),
+        headers: {'Content-Type': 'application/json'},
+      );
+    };
+    routerCertificateController.put(
+      '/templates/{templateId}',
+      pipelineCertificateControllerupdateTemplate.addHandler(
+        handlerCertificateControllerupdateTemplate,
+      ),
+    );
     _router.mount('/certificates', routerCertificateController.call);
 
     _injector.addLazySingleton(OpenApiConfig.create(paths, apis).call);
@@ -419,8 +711,8 @@ class _DSON extends DSON {
         #templateName: json['templateName'],
         #templateBlobUrl: json['templateBlobUrl'],
         #uploadedByUserId: json['uploadedByUserId'],
-        #createdAt: fromJson<DateTime>(json['createdAt']),
-        #updatedAt: fromJson<DateTime>(json['updatedAt']),
+        #createdAt: DateTimeParse().fromJson(json['createdAt']),
+        #updatedAt: DateTimeParse().fromJson(json['updatedAt']),
       });
     };
     toJsonMap[TemplateDto] = (object) {
@@ -431,8 +723,8 @@ class _DSON extends DSON {
         'templateName': obj.templateName,
         'templateBlobUrl': obj.templateBlobUrl,
         'uploadedByUserId': obj.uploadedByUserId,
-        'createdAt': toJson<DateTime>(obj.createdAt),
-        'updatedAt': toJson<DateTime>(obj.updatedAt),
+        'createdAt': DateTimeParse().toJson(obj.createdAt),
+        'updatedAt': DateTimeParse().toJson(obj.updatedAt),
       };
     };
     toOpenApiMap[TemplateDto] = {
@@ -443,8 +735,8 @@ class _DSON extends DSON {
         "templateName": {"type": "string"},
         "templateBlobUrl": {"type": "string"},
         "uploadedByUserId": {"type": "string"},
-        "createdAt": {r"$ref": "#/components/schemas/DateTime"},
-        "updatedAt": {r"$ref": "#/components/schemas/DateTime"},
+        "createdAt": {"type": "string"},
+        "updatedAt": {"type": "string"},
       },
       "required": [
         "templateId",
@@ -508,6 +800,51 @@ class _DSON extends DSON {
         },
       },
       "required": ["pagination", "data"],
+    };
+
+    fromJsonMap[TemplateOperationResponseDto] = (Map<String, dynamic> json) {
+      return Function.apply(TemplateOperationResponseDto.new, [], {
+        #templateId: json['templateId'],
+        #courseId: json['courseId'],
+        #templateName: json['templateName'],
+        #templateBlobUrl: json['templateBlobUrl'],
+        #uploadedByUserId: json['uploadedByUserId'],
+        #createdAt: DateTimeParse().fromJson(json['createdAt']),
+        #updatedAt: DateTimeParse().fromJson(json['updatedAt']),
+      });
+    };
+    toJsonMap[TemplateOperationResponseDto] = (object) {
+      final obj = object as TemplateOperationResponseDto;
+      return {
+        'templateId': obj.templateId,
+        'courseId': obj.courseId,
+        'templateName': obj.templateName,
+        'templateBlobUrl': obj.templateBlobUrl,
+        'uploadedByUserId': obj.uploadedByUserId,
+        'createdAt': DateTimeParse().toJson(obj.createdAt),
+        'updatedAt': DateTimeParse().toJson(obj.updatedAt),
+      };
+    };
+    toOpenApiMap[TemplateOperationResponseDto] = {
+      "type": "object",
+      "properties": <String, dynamic>{
+        "templateId": {"type": "string"},
+        "courseId": {"type": "string"},
+        "templateName": {"type": "string"},
+        "templateBlobUrl": {"type": "string"},
+        "uploadedByUserId": {"type": "string"},
+        "createdAt": {"type": "string"},
+        "updatedAt": {"type": "string"},
+      },
+      "required": [
+        "templateId",
+        "courseId",
+        "templateName",
+        "templateBlobUrl",
+        "uploadedByUserId",
+        "createdAt",
+        "updatedAt",
+      ],
     };
 
     return (fromJsonMap, toJsonMap, toOpenApiMap);

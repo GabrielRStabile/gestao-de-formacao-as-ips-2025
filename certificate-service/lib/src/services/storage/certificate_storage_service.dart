@@ -22,6 +22,20 @@ abstract class CertificateStorageService {
     required String fileName,
   });
 
+  /// Updates an existing certificate template PDF
+  ///
+  /// [templateId] Unique identifier for the template
+  /// [templateData] New PDF data as Uint8List
+  /// [fileName] New filename of the template
+  ///
+  /// Returns the storage URL/key for the updated template
+  /// Throws [CertificateStorageException] if update fails or template not found
+  Future<String> updateCertificateTemplate({
+    required String templateId,
+    required Uint8List templateData,
+    required String fileName,
+  });
+
   /// Downloads a certificate template PDF
   ///
   /// [templateId] Unique identifier for the template

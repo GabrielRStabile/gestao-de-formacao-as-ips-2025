@@ -1,3 +1,5 @@
+import 'package:certificate_service/config/app_configuration.dart';
+
 /// Configuration class for object storage settings
 ///
 /// Contains all configuration parameters needed to connect to MinIO/S3 storage.
@@ -51,46 +53,31 @@ class StorageConfig {
   /// - MINIO_TEMPLATES_BUCKET: Templates bucket name (optional)
   /// - MINIO_CERTIFICATES_BUCKET: Certificates bucket name (optional)
   factory StorageConfig.fromEnvironment() {
-    final endpoint = const String.fromEnvironment('MINIO_ENDPOINT');
-    final accessKey = const String.fromEnvironment('MINIO_ACCESS_KEY');
-    final secretKey = const String.fromEnvironment('MINIO_SECRET_KEY');
+    final endpoint = env['MINIO_ENDPOINT'];
+    final accessKey = env['MINIO_ACCESS_KEY'];
+    final secretKey = env['MINIO_SECRET_KEY'];
 
-    if (endpoint.isEmpty) {
+    if (endpoint?.isEmpty ?? true) {
       throw ArgumentError('MINIO_ENDPOINT environment variable is required');
     }
-    if (accessKey.isEmpty) {
+    if (accessKey?.isEmpty ?? true) {
       throw ArgumentError('MINIO_ACCESS_KEY environment variable is required');
     }
-    if (secretKey.isEmpty) {
+    if (secretKey?.isEmpty ?? true) {
       throw ArgumentError('MINIO_SECRET_KEY environment variable is required');
     }
 
     return StorageConfig(
-      endpoint: endpoint,
-      accessKey: accessKey,
-      secretKey: secretKey,
-      useSSL:
-          const String.fromEnvironment(
-            'MINIO_USE_SSL',
-            defaultValue: 'false',
-          ).toLowerCase() ==
-          'true',
-      port:
-          const String.fromEnvironment('MINIO_PORT').isNotEmpty
-              ? int.tryParse(const String.fromEnvironment('MINIO_PORT'))
-              : null,
+      endpoint: endpoint!,
+      accessKey: accessKey!,
+      secretKey: secretKey!,
+      useSSL: env['MINIO_USE_SSL']?.toLowerCase() == 'true',
       region:
-          const String.fromEnvironment('MINIO_REGION').isNotEmpty
-              ? const String.fromEnvironment('MINIO_REGION')
-              : null,
-      templatesBucketName: const String.fromEnvironment(
-        'MINIO_TEMPLATES_BUCKET',
-        defaultValue: 'certificate-templates',
-      ),
-      certificatesBucketName: const String.fromEnvironment(
-        'MINIO_CERTIFICATES_BUCKET',
-        defaultValue: 'generated-certificates',
-      ),
+          env['MINIO_REGION']?.isNotEmpty == true ? env['MINIO_REGION'] : null,
+      templatesBucketName:
+          env['MINIO_TEMPLATES_BUCKET'] ?? 'certificate-templates',
+      certificatesBucketName:
+          env['MINIO_CERTIFICATES_BUCKET'] ?? 'generated-certificates',
     );
   }
 

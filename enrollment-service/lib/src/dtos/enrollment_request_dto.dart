@@ -159,3 +159,37 @@ class EnrollmentStatus {
     return validStatuses.contains(status);
   }
 }
+
+/// Data Transfer Object for enrollment cancellation requests
+///
+/// Used for receiving cancellation requests from trainees.
+/// Contains optional reason for the cancellation.
+@DTO()
+class EnrollmentCancelDto with Validator<EnrollmentCancelDto> {
+  /// Optional reason for the cancellation
+  final String? reason;
+
+  const EnrollmentCancelDto({this.reason});
+
+  /// Creates an instance from JSON data
+  factory EnrollmentCancelDto.fromJson(Map<String, dynamic> json) {
+    return EnrollmentCancelDto(reason: json['reason'] as String?);
+  }
+
+  /// Converts the instance to JSON
+  Map<String, dynamic> toJson() {
+    return {'reason': reason};
+  }
+
+  /// Validates the DTO using the Vaden validation framework
+  @override
+  LucidValidator<EnrollmentCancelDto> validate(
+    ValidatorBuilder<EnrollmentCancelDto> builder,
+  ) {
+    return builder
+      ..ruleFor(
+        (r) => r.reason,
+        key: 'reason',
+      ).maxLength(500).when((r) => r.reason != null);
+  }
+}

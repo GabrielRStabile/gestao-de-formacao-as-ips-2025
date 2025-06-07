@@ -1,0 +1,14 @@
+# Audit Service Application Configuration
+# Configuration settings for the audit logging service
+
+# OpenAPI documentation settings
+openapi:
+  title: Audit Service API
+  version: 1.0.0
+  description: Comprehensive audit logging service with REST endpoints for managing audit logs
+  enable: true
+
+# Server configuration
+server:
+  port: 8080
+  host: localhost

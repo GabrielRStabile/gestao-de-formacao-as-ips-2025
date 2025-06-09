@@ -8,7 +8,10 @@ const session = require('express-session');
 const flash = require('connect-flash');
 
 const indexRouter = require('./routes/index');
-const coursesRouter = require('./routes/courses');
+const gestorRoutes = require('./routes/gestor');
+const formadorRoutes = require('./routes/formador');
+const cursosRoutes = require('./routes/cursos');
+const bodyParser = require('body-parser');
 
 const app = express();
 
@@ -34,9 +37,12 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use(bodyParser.json());
 // Rotas principais
 app.use('/', indexRouter);
-app.use('/courses', coursesRouter);
+app.use('/gestor', gestorRoutes);
+app.use('/formador', formadorRoutes);
+app.use('/cursos', cursosRoutes);
 
 
 // 404

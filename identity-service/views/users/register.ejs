@@ -1,0 +1,78 @@
+<%- include('../partials/header') %>
+
+<!-- intl-tel-input CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/18.1.1/css/intlTelInput.css"/>
+<!-- Font Awesome para o ícone de olho -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+
+<div class="register-container">
+  <h2 class="form-title">Registrar Usuário</h2>
+  <form method="POST" action="/users/register" autocomplete="off" class="register-form">
+    <label for="role" class="role-label">Por favor, escolha o seu perfil de acesso:</label>
+    <select name="role" id="role" required>
+      <option value="" disabled selected>Selecione o perfil</option>
+      <option value="formando">Formando</option>
+      <option value="formador">Formador</option>
+      <option value="gestor">Gestor</option>
+    </select>
+
+    <label for="name">
+      <input id="name" name="name" placeholder="Nome" required />
+   </label>
+    <label for="date_of_birth">
+      <input id="date_of_birth" name="date_of_birth" type="date" required />
+    </label>
+    <label for="nif">
+     <input id="nif" name="nif" placeholder="NIF" required />
+    </label>
+    <label for="email">
+    <input id="email" name="email" type="email" placeholder="Email" required /></label>
+    <label for="phone"></label>
+    <input id="phone" name="phone" type="tel" placeholder="Telefone" />
+    <label for="address">
+    <input id="address" name="address" placeholder="Endereço" />
+  </label>
+    <label for="passwordField">
+    <div class="password-wrapper">
+      <input id="passwordField" name="password" type="password" placeholder="Senha" required />
+      <i class="far fa-eye" id="togglePassword" title="Mostrar/ocultar senha"></i>
+    </div></label>
+
+    <button type="submit" class="blue-button">Registrar</button>
+  </form>
+
+  <% if (error) { %>
+    <p class="error-message"><%= error %></p>
+  <% } %>
+</div>
+
+<!-- intl-tel-input JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/18.1.1/js/intlTelInput.min.js"></script>
+<script>
+  // Inicializa o intl-tel-input
+  const input = document.querySelector("#phone");
+  const iti = window.intlTelInput(input, {
+    initialCountry: "auto",
+    preferredCountries: ["pt", "br", "ao", "mz"],
+    utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/18.1.1/js/utils.js"
+  });
+
+  // Ao submeter o formulário, substitui o valor do campo pelo número completo (com indicativo)
+  document.querySelector('.register-form').addEventListener('submit', function(e) {
+    input.value = iti.getNumber();
+  });
+
+  // Mostrar/ocultar senha
+  document.addEventListener('DOMContentLoaded', function() {
+    const passwordField = document.getElementById('passwordField');
+    const togglePassword = document.getElementById('togglePassword');
+    togglePassword.addEventListener('click', function() {
+      const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+      passwordField.setAttribute('type', type);
+      this.classList.toggle('fa-eye');
+      this.classList.toggle('fa-eye-slash');
+    });
+  });
+</script>
+
+<%- include('../partials/footer') %>

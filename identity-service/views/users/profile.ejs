@@ -1,0 +1,14 @@
+<%- include('../partials/header') %>
+<div class="centered-content">
+  <h2>Meu Perfil</h2>
+  <p><strong>Nome:</strong> <%= user.name %></p>
+  <p><strong>Data de Nascimento:</strong> <%= user.date_of_birth.toISOString().slice(0,10) %></p>
+  <p><strong>NIF:</strong> <%= user.nif %></p>
+  <p><strong>Email:</strong> <%= user.email %></p>
+  <p><strong>Telefone:</strong> <%= user.phone %></p>
+  <p><strong>Endereço:</strong> <%= user.address %></p>
+  <p><strong>Perfil:</strong> <%= user.role %></p>
+  <a href="/users/edit" class="blue-button">Editar Perfil</a>
+  <a href="/users/change-password" class="blue-button" style="margin-left: 10px;">Alterar Senha</a>
+</div>
+<%- include('../partials/footer') %>

@@ -1,0 +1,52 @@
+<%- include('../partials/header') %>
+<div class="centered-content" style="position: relative; min-height: 70vh;">
+  <h2>Formações Disponíveis</h2>
+  <table>
+    <tr>
+      <th>Título</th>
+      <th>Descrição</th>
+      <th>Capacidade</th>
+      <th>Período</th>
+      <th>Formador</th>
+      <th>Ações</th>
+    </tr>
+    <% courses.forEach(course => { %>
+      <tr>
+        <td><%= course.title %></td>
+        <td><%= course.description %></td>
+        <td><%= course.max_capacity %></td>
+        <td>
+          <%= course.start_date.toISOString().slice(0,10) %>
+          a
+          <%= course.end_date.toISOString().slice(0,10) %>
+        </td>
+        <td><%= course.instructor_id %></td>
+        <td>
+          <% if (user && user.role === 'gestor') { %>
+            <a href="/courses/<%= course.id %>/edit" class="blue-button action-btn">Editar</a>
+            <form method="POST" action="/courses/<%= course.id %>/delete" style="display:inline;">
+              <button type="submit" class="red-button action-btn" onclick="return confirm('Tem certeza que deseja excluir?')">Excluir</button>
+            </form>
+          <% } else if (user && user.role === 'formando') { 
+               const jaInscrito = userEnrollments.some(e => e.id === course.id);
+          %>
+            <% if (jaInscrito) { %>
+              <span style="color:green; font-weight:bold;">Inscrito</span>
+            <% } else { %>
+              <form method="POST" action="/courses/<%= course.id %>/enroll" style="display:inline;">
+                <button type="submit" class="blue-button action-btn">Inscrever-se</button>
+              </form>
+            <% } %>
+          <% } %>
+        </td>
+      </tr>
+    <% }) %>
+  </table>
+
+  <% if (user && user.role === 'gestor') { %>
+    <div style="width:100%; display:flex; justify-content:center; margin-top: 2em;">
+      <a href="/courses/create" class="blue-button">Criar Novo Curso</a>
+    </div>
+  <% } %>
+</div>
+<%- include('../partials/footer') %>

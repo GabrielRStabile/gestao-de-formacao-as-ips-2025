@@ -1,0 +1,23 @@
+<%- include('../partials/header') %>
+<div class="centered-content">
+  <h2>Minhas Inscrições</h2>
+  <table style="width:100%; margin-bottom:1em;">
+    <tr>
+      <th>Título</th>
+      <th>Descrição</th>
+      <th>Capacidade</th>
+      <th>Período</th>
+      <th>Formador</th>
+    </tr>
+    <% courses.forEach(course => { %>
+      <tr>
+        <td><%= course.title %></td>
+        <td><%= course.description %></td>
+        <td><%= course.max_capacity %></td>
+        <td><%= course.start_date.toISOString().slice(0,10) %> a <%= course.end_date.toISOString().slice(0,10) %></td>
+        <td><%= course.instructor_id %></td>
+      </tr>
+    <% }) %>
+  </table>
+</div>
+<%- include('../partials/footer') %>

@@ -1,0 +1,33 @@
+<%- include('../partials/header') %>
+<div class="centered-content">
+  <h2 class="form-title">Editar Curso</h2>
+  <form method="POST" action="/courses/<%= course.id %>/edit" class="course-form">
+    <label for="title">Título</label>
+    <input type="text" id="title" name="title" value="<%= course.title %>" required>
+
+    <label for="description">Descrição</label>
+    <textarea id="description" name="description" required><%= course.description %></textarea>
+
+    <label for="max_capacity">Capacidade Máxima</label>
+    <input type="number" id="max_capacity" name="max_capacity" value="<%= course.max_capacity %>" min="1" required>
+
+    <label for="start_date">Data de Início</label>
+    <input type="date" id="start_date" name="start_date" value="<%= course.start_date.toISOString().slice(0,10) %>" required>
+
+    <label for="end_date">Data de Fim</label>
+    <input type="date" id="end_date" name="end_date" value="<%= course.end_date.toISOString().slice(0,10) %>" required>
+
+    <label for="instructor_id">ID do Formador</label>
+    <input type="number" id="instructor_id" name="instructor_id" value="<%= course.instructor_id %>" required>
+
+    <% if (error) { %>
+      <div class="error-message"><%= error %></div>
+    <% } %>
+
+    <div class="form-actions">
+      <button type="submit" class="blue-button">Salvar Alterações</button>
+      <a href="/courses" class="red-button" style="text-decoration:none;display:inline-block;">Cancelar</a>
+    </div>
+  </form>
+</div>
+<%- include('../partials/footer') %>

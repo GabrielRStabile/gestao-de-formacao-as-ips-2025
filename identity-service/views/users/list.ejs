@@ -1,0 +1,26 @@
+<%- include('../partials/header') %>
+<div class="centered-content">
+  <h2>Usuários Cadastrados</h2>
+  <table style="width:100%; margin-bottom:1em;">
+    <tr>
+      <th>Nome</th>
+      <th>Email</th>
+      <th>Perfil</th>
+      <th>Ações</th>
+    </tr>
+    <% users.forEach(user => { %>
+      <tr>
+        <td><%= user.name %></td>
+        <td><%= user.email %></td>
+        <td><%= user.role %></td>
+        <td>
+          <a href="/users/<%= user.id %>/edit" class="blue-button">Editar</a>
+          <form method="POST" action="/users/<%= user.id %>/delete" style="display:inline;">
+            <button type="submit" class="blue-button" style="background:#dc3545;">Excluir</button>
+          </form>
+        </td>
+      </tr>
+    <% }) %>
+  </table>
+</div>
+<%- include('../partials/footer') %>

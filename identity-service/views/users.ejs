@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Utilizadores</title>
+</head>
+<body>
+  <h1>Lista de Utilizadores (não administradores)</h1>
+  <table border="1">
+    <tr>
+      <th>Nome</th>
+      <th>Email</th>
+      <th>Role</th>
+      <th>Ação</th>
+    </tr>
+    <% users.forEach(function(user) { %>
+      <tr>
+        <td><%= user.name %></td>
+        <td><%= user.email %></td>
+        <td><%= user.role %></td>
+        <td>
+          <form method="post" action="/users/delete/<%= user.id %>" style="display:inline">
+            <button type="submit">Excluir</button>
+          </form>
+        </td>
+      </tr>
+    <% }) %>
+  </table>
+  <a href="/dashboard">Voltar</a>
+</body>
+</html>

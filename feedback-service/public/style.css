@@ -1,0 +1,197 @@
+/* ===== Reset Básico ===== */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f5f7fa;
+}
+
+/* ===== Cabeçalho e Rodapé ===== */
+header, footer {
+  background: #eee;
+  padding: 1em;
+  text-align: center;
+}
+
+/* ===== Títulos ===== */
+.form-title {
+  text-align: center;
+  margin-bottom: 1.5em;
+  font-size: 2em;
+  color: #222;
+}
+
+/* ===== Containers Centralizados ===== */
+.auth-container, .register-container, .centered-content {
+  max-width: 440px;
+  margin: 40px auto 0 auto;
+  background: #fff;
+  padding: 2.5em 2em 2em 2em;
+  border-radius: 10px;
+  box-shadow: 0 2px 18px rgba(0,0,0,0.10);
+}
+
+/* Para páginas maiores (ex: lista de cursos) */
+.centered-content {
+  max-width: 900px;
+  padding: 2.5em 2em 2em 2em;
+  text-align: center;
+}
+
+/* ===== Formulários ===== */
+.register-form, .login-form, .course-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2em;
+}
+
+.register-form label,
+.login-form label,
+.course-form label {
+  font-weight: bold;
+  margin-bottom: 0.25em;
+  text-align: left;
+}
+
+.register-form input,
+.register-form select,
+.login-form input,
+.course-form input,
+.course-form select,
+.course-form textarea {
+  padding: 0.7em;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1em;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 0.2em;
+}
+
+.register-form select,
+.course-form select {
+  background: #f8f8f8;
+}
+
+.course-form textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+/* ===== Wrapper para senha com ícone ===== */
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-wrapper input {
+  width: 100%;
+  padding-right: 38px;
+}
+
+.password-wrapper i {
+  position: absolute;
+  right: 12px;
+  cursor: pointer;
+  color: #007bff;
+  font-size: 1.1em;
+}
+
+/* ===== Botões ===== */
+.blue-button {
+  background-color: #007bff;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  font-weight: bold;
+  padding: 0.7em 1.5em;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 0.5em;
+}
+
+.blue-button:hover {
+  background-color: #0056b3;
+}
+
+.red-button {
+  background-color: #e73232;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  font-weight: bold;
+  padding: 0.7em 1.2em;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.red-button:hover {
+  background-color: #b71c1c;
+}
+
+/* Espaço entre botões de ação em tabelas */
+.action-btn {
+  margin-top: 1.5em;
+}
+
+.action-btn:last-child {
+  margin-top: 1em;
+}
+
+/* ===== Mensagens de erro e sucesso ===== */
+.error-message {
+  color: #e73232;
+  background: #fff0f0;
+  border: 1px solid #e73232;
+  border-radius: 4px;
+  padding: 0.7em 1em;
+  margin: 1em 0 0 0;
+  text-align: center;
+  font-weight: 500;
+}
+
+.success-message {
+  color: #218838;
+  background: #eaffea;
+  border: 1px solid #218838;
+  border-radius: 4px;
+  padding: 0.7em 1em;
+  margin: 1em 0 0 0;
+  text-align: center;
+  font-weight: 500;
+}
+
+/* ===== Tabela ===== */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 2em;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 10px 8px;
+  text-align: left;
+}
+
+th {
+  background: #f6f8fa;
+  font-weight: bold;
+}
+
+/* ===== Responsividade ===== */
+@media (max-width: 700px) {
+  .auth-container, .register-container, .centered-content {
+    max-width: 98vw;
+    padding: 1.2em 0.5em 1em 0.5em;
+  }
+  .form-title {
+    font-size: 1.3em;
+  }
+  table, th, td {
+    font-size: 0.98em;
+  }
+}
